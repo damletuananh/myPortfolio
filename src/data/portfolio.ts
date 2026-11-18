@@ -339,12 +339,12 @@ export const PROJECTS: ProjectItem[] = [
     layoutStyle: 1,
     primaryMedia: {
       imageSrc: "/media/projects/project-01.jpg",
-      alt: "SmartRoute interactive Ho Chi Minh City congestion prediction map",
+      alt: "Elevated twilight river bridges carrying luminous long-exposure amber traffic light ribbons across dark water, an editorial metaphor for SmartRoute urban transit forecasting",
     },
     secondaryMedia: {
       imageSrc: "/media/projects/project-01-detail.jpg",
       videoSrc: "/media/videos/project-01.webm",
-      alt: "SmartRoute real-time +15, +30, and +60 minute corridor forecast playback",
+      alt: "Low-angle macro study of rain-slick nocturnal asphalt reflecting glowing amber vehicle lights in wet ripples, evoking SmartRoute weather-aware corridor forecasting",
     },
     delaySecondary: 0.35,
     caseStudyBlocks: [
@@ -353,7 +353,7 @@ export const PROJECTS: ProjectItem[] = [
         media: {
           imageSrc: "/media/projects/wide-01.jpg",
           videoSrc: "/media/videos/project-01.webm",
-          alt: "SmartRoute corridor forecast view across 9,841 Ho Chi Minh City road segments",
+          alt: "Nocturnal aerial panorama of sweeping amber highway arteries curving through an illuminated city grid, representing SmartRoute forecasting across 9,841 Ho Chi Minh City road segments",
         },
         caption:
           "Anticipating bottlenecks (+15 / +30 / +60 min) across 9,841 Ho Chi Minh City corridors.",
@@ -370,7 +370,7 @@ export const PROJECTS: ProjectItem[] = [
         type: "imageText",
         media: {
           imageSrc: "/media/projects/project-01-detail.jpg",
-          alt: "SmartRoute viewport-bounded fetching and sub-2ms XGBoost inference timing",
+          alt: "Rain-slick night pavement mirroring amber traffic reflections in crisp puddle ripples, illustrating SmartRoute viewport-bounded rendering and sub-2ms XGBoost inference",
         },
         align: "left",
         heading: "97.78% XGBoost Meets 60 FPS WebGL",
@@ -383,11 +383,11 @@ export const PROJECTS: ProjectItem[] = [
         type: "split5050",
         left: {
           imageSrc: "/media/projects/project-01.jpg",
-          alt: "SmartRoute district-wide congestion heatmap view",
+          alt: "Twilight river bridges traced by continuous long-exposure amber traffic light ribbons, framing SmartRoute corridor-level transit flow",
         },
         right: {
           imageSrc: "/media/projects/project-01-detail.jpg",
-          alt: "Corridor severity lookahead controls and API telemetry metrics",
+          alt: "Close-up of wet nocturnal asphalt glowing with amber taillight reflections during tropical rain, echoing live OpenWeather and corridor telemetry",
         },
       },
       {
@@ -420,14 +420,14 @@ export const PROJECTS: ProjectItem[] = [
     layoutStyle: 2,
     primaryMedia: {
       imageSrc: "/media/projects/project-02.jpg",
-      alt: "SEAL Underrate multi-viewport UI/UX audit platform workspace",
+      alt: "Three progressive frosted calibration glass slabs in landscape, square, and tall portrait proportions on stone with amber refractions, a multi-viewport scale metaphor for SEAL Underrate",
     },
     caseStudyBlocks: [
       {
         type: "fullscreen169",
         media: {
           imageSrc: "/media/projects/wide-02.jpg",
-          alt: "SEAL Underrate automated multi-agent QA pipeline overview",
+          alt: "Suspended brass plumb line hanging in crisp sunlight above aligned clear optical prisms and smoked optical glass frames on a stone ledge, symbolizing SEAL Underrate multi-agent QA verification",
         },
         caption:
           "Three parallel AI reviewers inspecting Playwright viewport captures behind strict JSON schemas.",
@@ -446,15 +446,15 @@ export const PROJECTS: ProjectItem[] = [
         screens: [
           {
             imageSrc: "/media/projects/mobile-01-a.jpg",
-            alt: "SEAL Underrate 1920x1080 desktop layout check capture",
+            alt: "Dark indigo optical glass triptych study I: tall transparent monolith on slate pierced by a horizontal amber calibration beam, representing SEAL Underrate 1920x1080 desktop inspection",
           },
           {
             imageSrc: "/media/projects/mobile-01-b.jpg",
-            alt: "SEAL Underrate 768x1024 tablet breakpoint inspection",
+            alt: "Dark indigo optical glass triptych study II: matte-black mechanical aperture housing a faceted amber prism over slate ray tracings, representing SEAL Underrate 768x1024 tablet inspection",
           },
           {
             imageSrc: "/media/projects/mobile-01-c.jpg",
-            alt: "SEAL Underrate 375x667 mobile responsive QA trace",
+            alt: "Dark indigo optical glass triptych study III: twin stacked beveled smoked-glass plates catching warm amber edge light on a dark pedestal, representing SEAL Underrate 375x667 mobile inspection",
           },
         ],
       },
@@ -462,7 +462,7 @@ export const PROJECTS: ProjectItem[] = [
         type: "imageText",
         media: {
           imageSrc: "/media/projects/project-02-detail.jpg",
-          alt: "FastAPI orchestrator schemas and PostgreSQL finding severity rankings",
+          alt: "Precision brushed brass IoT sensor couplings and dark matte-indigo clamps linked by glowing golden fiber optics on slate, reflecting SEAL Hackathon internal RAG and factory safety telemetry",
         },
         align: "right",
         heading: "From QA Podium to Internal RAG & Factory IoT",
@@ -561,7 +561,7 @@ export const PROJECTS: ProjectItem[] = [
     primaryMedia: {
       imageSrc: "/media/projects/project-04.jpg",
       videoSrc: "/media/videos/project-04.webm",
-      alt: "ChiChan confidential youth health education and RAG consultation platform",
+      alt: "Sculpted matte amber glass vessels standing beside calm cream archival books on sunlit travertine stone, a quiet metaphor for ChiChan empathetic youth guidance",
     },
     caseStudyBlocks: [
       {
@@ -569,7 +569,7 @@ export const PROJECTS: ProjectItem[] = [
         media: {
           imageSrc: "/media/projects/wide-04.jpg",
           videoSrc: "/media/videos/project-04.webm",
-          alt: "ChiChan Platform RAG retrieval and consultation interface demo",
+          alt: "Sunlit travertine sanctuary bathed in slatted daylight with archival volumes and twin matte vessels along a stone bench, evoking ChiChan confidential youth health space",
         },
         caption:
           "WHO/CDC health truth indexed in 768-dim pgvector, delivered through empathetic Gemini SSE personas.",
@@ -586,7 +586,7 @@ export const PROJECTS: ProjectItem[] = [
         type: "imageText",
         media: {
           imageSrc: "/media/projects/project-04-detail.jpg",
-          alt: "Next.js 16, FastAPI, Supabase, and 768-dim pgvector RAG system boundaries",
+          alt: "Ascending stepped layers of translucent parchment framed by cut amber blocks on warm travertine stone, symbolizing ChiChan structured 768-dim pgvector RAG boundaries",
         },
         align: "right",
         heading: "Architecture Teenage Builders Could Defend",
@@ -614,14 +614,14 @@ export const PROJECTS: ProjectItem[] = [
     layoutStyle: 5,
     primaryMedia: {
       imageSrc: "/media/projects/project-05.jpg",
-      alt: "Self-Storage Platform unit availability, pricing calculator, and staff operations UI",
+      alt: "Modular brushed-steel louver storage compartments and travertine structural piers striped with daylight, an architectural study for Self-Storage Platform unit discovery and allocation",
     },
     caseStudyBlocks: [
       {
         type: "fullscreen169",
         media: {
           imageSrc: "/media/projects/wide-05.jpg",
-          alt: "Self-Storage Platform digital leasing and warehouse inventory workflow overview",
+          alt: "Daylight architectural pavilion framing folded brushed-steel panels and sculpted travertine arches inside a sunlit gallery, reflecting Self-Storage Platform bay logistics",
         },
         caption:
           "Built across 01/2025 – 08/2026 bridging customer bay discovery with live warehouse operations.",
@@ -638,7 +638,7 @@ export const PROJECTS: ProjectItem[] = [
         type: "imageText",
         media: {
           imageSrc: "/media/projects/project-05-detail.jpg",
-          alt: "Spring Boot REST API layer and relational SQL Server lease modeling",
+          alt: "Twilight geometric concrete warehouse vaults and monumental columns lit by warm amber recessed slits under a dusk sky, evoking Self-Storage Platform Spring Boot and SQL Server durability",
         },
         align: "left",
         heading: "Where Domain Discipline Quietly Began",
@@ -666,12 +666,12 @@ export const PROJECTS: ProjectItem[] = [
     layoutStyle: 6,
     primaryMedia: {
       imageSrc: "/media/projects/project-06.jpg",
-      alt: "UndoRedo Canvas interactive drawing engine demonstrating Dual-Stack LIFO state history",
+      alt: "Sweeping midnight-indigo and amber ink brushstrokes on textured cotton rag paper beside stacked dark-blue and amber discs, an editorial metaphor for UndoRedo Canvas",
     },
     secondaryMedia: {
       imageSrc: "/media/projects/project-06-detail.jpg",
       videoSrc: "/media/videos/project-06.webm",
-      alt: "UndoRedo Canvas real-time O(1) draw, undo, and redo stack demonstration",
+      alt: "Dual parallel vertical stacks of smooth dark-blue and amber pigment stones aligned on travertine beside cotton rag paper, symbolizing UndoRedo Canvas O(1) Dual-Stack LIFO history",
     },
     delaySecondary: 0.35,
     caseStudyBlocks: [
@@ -680,7 +680,7 @@ export const PROJECTS: ProjectItem[] = [
         media: {
           imageSrc: "/media/projects/wide-06.jpg",
           videoSrc: "/media/videos/project-06.webm",
-          alt: "UndoRedo Canvas deterministic O(1) history replay demo",
+          alt: "Overhead canvas studio worktable pairing sweeping midnight-indigo and amber ink brushstrokes on cotton rag paper with dual parallel vertical stacks of dark-blue and amber pigment stones",
         },
         caption:
           "Constant-time O(1) Dual-Stack (LIFO) state invariants brought to life on HTML5 Canvas.",
@@ -697,7 +697,7 @@ export const PROJECTS: ProjectItem[] = [
         type: "imageText",
         media: {
           imageSrc: "/media/projects/project-06-detail.jpg",
-          alt: "Dual-Stack Undo and Redo branch clearing invariants visualization",
+          alt: "Dual parallel vertical stacks of dark-blue and amber pigment stones resting on travertine, illustrating UndoRedo Canvas deterministic LIFO Undo and Redo invariants",
         },
         align: "right",
         heading: "Calm Surfaces Start With Honest State",
@@ -709,11 +709,11 @@ export const PROJECTS: ProjectItem[] = [
         type: "split5050",
         left: {
           imageSrc: "/media/projects/project-06.jpg",
-          alt: "UndoRedo Canvas active stroke workspace",
+          alt: "Overhead studio sheet of sweeping midnight-indigo and amber ink brushstrokes on textured cotton rag paper beside stacked state discs",
         },
         right: {
           imageSrc: "/media/projects/project-06-detail.jpg",
-          alt: "Dual-Stack state transition view",
+          alt: "Overhead study of dual parallel vertical stacks of dark-blue and amber pigment stones on travertine",
         },
       },
     ],
