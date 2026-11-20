@@ -86,73 +86,133 @@ export function Marquee({
       duration = Math.max(2, duration);
 
       const baseSign = direction === "right" ? -1 : 1;
+      const boostGain = 1.0 + Math.min(Math.max(scrollSpeed ?? 0, 0), 2) * 0.2;
+      const MAX_BOOST = 6.5;
+
+      gsap.set(scrollEl, { x: 0 });
 
       const loopTween = gsap.to(containers, {
         xPercent: -100,
         repeat: -1,
         duration,
         ease: "none",
+        force3D: true,
         paused: true,
       });
 
-      loopTween.iteration(1000);
+      loopTween.iteration(10000);
       loopTween.timeScale(baseSign);
 
-      let lastScrollDir = 1;
+      let isInView = false;
+      let targetBoost = 0;
+      let currentBoost = 0;
+      let lastScale = baseSign;
+
+      const syncInView = (visible: boolean) => {
+        if (visible) {
+          isInView = true;
+          wrapper.classList.add("inview");
+          const nextScale = baseSign * (1 + currentBoost);
+          if (nextScale !== lastScale) {
+            loopTween.timeScale(nextScale);
+            lastScale = nextScale;
+          }
+          loopTween.resume();
+        } else {
+          isInView = false;
+          targetBoost = 0;
+          currentBoost = 0;
+          if (lastScale !== baseSign) {
+            loopTween.timeScale(baseSign);
+            lastScale = baseSign;
+          }
+          loopTween.pause();
+        }
+      };
+
+      const checkIsInView = () => {
+        const rect = wrapper.getBoundingClientRect();
+        return rect.top < window.innerHeight && rect.bottom > 0;
+      };
 
       ScrollTrigger.create({
         trigger: wrapper,
         start: "top bottom",
         end: "bottom top",
-        onEnter: () => {
-          wrapper.classList.add("inview");
-          loopTween.play();
-        },
-        onEnterBack: () => {
-          wrapper.classList.add("inview");
-          loopTween.play();
-        },
-        onLeave: () => loopTween.pause(),
-        onLeaveBack: () => loopTween.pause(),
+        onEnter: () => syncInView(true),
+        onEnterBack: () => syncInView(true),
+        onLeave: () => syncInView(false),
+        onLeaveBack: () => syncInView(false),
+        onRefresh: () => syncInView(checkIsInView()),
         onUpdate: (self) => {
-          if (self.direction !== 0 && self.direction !== lastScrollDir) {
-            lastScrollDir = self.direction;
-            gsap.to(loopTween, {
-              timeScale: baseSign * (self.direction === -1 ? -1 : 1),
-              duration: 0.4,
-              overwrite: true,
-            });
+          if (!isInView) return;
+          const rawVelocity = Math.abs(self.getVelocity());
+          const v = Number.isFinite(rawVelocity) ? rawVelocity : 0;
+          if (v > 0) {
+            targetBoost = Math.max(
+              targetBoost,
+              Math.min(MAX_BOOST, (v / 260) * boostGain)
+            );
           }
         },
       });
 
-      const rect = wrapper.getBoundingClientRect();
-      if (rect.top < window.innerHeight && rect.bottom > 0) {
-        wrapper.classList.add("inview");
-        loopTween.play();
-      }
+      syncInView(checkIsInView());
 
-      if (scrollSpeed !== undefined && scrollSpeed !== 0) {
-        const scrollSign = direction === "right" ? -1 : 1;
-        gsap.fromTo(
-          scrollEl,
-          {
-            x: () => (scrollSign * scrollSpeed * wrapper.clientWidth) / 100,
-          },
-          {
-            x: () => (-scrollSign * scrollSpeed * wrapper.clientWidth) / 100,
-            ease: "none",
-            force3D: true,
-            scrollTrigger: {
-              trigger: wrapper,
-              start: "top bottom",
-              end: "bottom top",
-              scrub: 1,
-              invalidateOnRefresh: true,
-            },
-          }
+      const handleWheel = (event: WheelEvent) => {
+        if (!isInView) return;
+        const wheelMag = Math.min(
+          Math.abs(event.deltaY) + Math.abs(event.deltaX),
+          360
         );
-      }
+        if (wheelMag > 0) {
+          targetBoost = Math.max(
+            targetBoost,
+            Math.min(MAX_BOOST, (wheelMag / 75) * boostGain)
+          );
+        }
+      };
+
+      window.addEventListener("wheel", handleWheel, { passive: true });
+
+      const onTick = (_time: number, deltaRatioMs: number) => {
+        if (!isInView) return;
+
+        if (baseSign < 0 && loopTween.iteration() < 500) {
+          loopTween.iteration(loopTween.iteration() + 10000, true);
+        }
+
+        const dt = Math.min(
+          (deltaRatioMs > 0 ? deltaRatioMs : 16.67) / 1000,
+          0.05
+        );
+
+        targetBoost *= Math.exp(-5.0 * dt);
+        if (targetBoost < 0.001) {
+          targetBoost = 0;
+        }
+
+        const rate = targetBoost > currentBoost ? 16 : 3.8;
+        const alpha = 1 - Math.exp(-rate * dt);
+        currentBoost += (targetBoost - currentBoost) * alpha;
+
+        if (currentBoost < 0.004 && targetBoost === 0) {
+          currentBoost = 0;
+        }
+
+        const nextScale = baseSign * (1 + currentBoost);
+        if (nextScale !== lastScale) {
+          loopTween.timeScale(nextScale);
+          lastScale = nextScale;
+        }
+      };
+
+      gsap.ticker.add(onTick);
+
+      return () => {
+        window.removeEventListener("wheel", handleWheel);
+        gsap.ticker.remove(onTick);
+      };
     }, wrapperRef);
 
     return () => {

@@ -4,6 +4,7 @@ import React, { useEffect, useRef } from "react";
 import * as THREE from "three";
 import gsap from "gsap";
 import {
+  CurtainCloseOptions,
   CurtainController,
   CurtainVariant,
   useTransitionNav,
@@ -59,12 +60,18 @@ function computeScale(width: number): [number, number] {
   return [isMobile ? width / 15 : width / 45, isMobile ? 40 : 20];
 }
 
-function setColorForVariant(target: THREE.Color, variant: CurtainVariant) {
+function getColorRgbForVariant(
+  variant: CurtainVariant
+): [number, number, number] {
   if (variant === "menu") {
-    target.setRGB(0.133, 0.149, 0.294);
-  } else {
-    target.setRGB(0.38, 0.39, 0.52);
+    return [0.102, 0.169, 0.118];
   }
+  return [0.369, 0.439, 0.357];
+}
+
+function setColorForVariant(target: THREE.Color, variant: CurtainVariant) {
+  const [r, g, b] = getColorRgbForVariant(variant);
+  target.setRGB(r, g, b);
 }
 
 export function LoadCanvas() {
@@ -103,7 +110,7 @@ export function LoadCanvas() {
       u_time: { value: 0.0 },
       u_resolution: { value: new THREE.Vector2(width, height) },
       u_scale: { value: new THREE.Vector2(sx, sy) },
-      u_color: { value: new THREE.Color(0.38, 0.39, 0.52) },
+      u_color: { value: new THREE.Color(0.369, 0.439, 0.357) },
     };
 
     const material = new THREE.ShaderMaterial({
@@ -188,14 +195,61 @@ export function LoadCanvas() {
     window.addEventListener("resize", onResize);
 
     const controller: CurtainController = {
-      closeCurtain: (variant: CurtainVariant) => {
+      closeCurtain: (
+        variant: CurtainVariant,
+        options?: CurtainCloseOptions
+      ) => {
         flushPending();
         gsap.killTweensOf(wrapper);
         gsap.killTweensOf(uniforms.u_time);
+        gsap.killTweensOf(uniforms.u_color.value);
 
-        setColorForVariant(uniforms.u_color.value, variant);
+        const [targetR, targetG, targetB] = getColorRgbForVariant(variant);
+        const alreadyCovered =
+          Boolean(options?.fromMenu) || uniforms.u_time.value >= 13.5;
+
         wrapper.classList.add("loaded");
         startLoop();
+
+        if (alreadyCovered && variant === "nav") {
+          const remainingRatio = Math.max(0, 1 - uniforms.u_time.value / 15.0);
+          const handoffDuration = Math.max(0.22, 0.45 * remainingRatio);
+
+          return new Promise<void>((resolve) => {
+            resolvePending = resolve;
+
+            gsap.to(wrapper, {
+              opacity: 1,
+              duration: 0.12,
+              ease: "power1.out",
+              overwrite: "auto",
+            });
+
+            gsap.to(uniforms.u_time, {
+              value: 15.0,
+              duration: handoffDuration,
+              ease: "power1.out",
+              overwrite: "auto",
+            });
+
+            gsap.to(uniforms.u_color.value, {
+              r: targetR,
+              g: targetG,
+              b: targetB,
+              duration: handoffDuration,
+              ease: "power2.out",
+              overwrite: "auto",
+              onComplete: () => {
+                if (resolvePending === resolve) {
+                  resolvePending = null;
+                }
+                resolve();
+              },
+            });
+          });
+        }
+
+        setColorForVariant(uniforms.u_color.value, variant);
 
         return new Promise<void>((resolve) => {
           resolvePending = resolve;
@@ -226,6 +280,7 @@ export function LoadCanvas() {
         flushPending();
         gsap.killTweensOf(wrapper);
         gsap.killTweensOf(uniforms.u_time);
+        gsap.killTweensOf(uniforms.u_color.value);
 
         wrapper.classList.remove("loaded");
         startLoop();
@@ -270,6 +325,7 @@ export function LoadCanvas() {
       stopLoop();
       gsap.killTweensOf(wrapper);
       gsap.killTweensOf(uniforms.u_time);
+      gsap.killTweensOf(uniforms.u_color.value);
       window.removeEventListener("resize", onResize);
       geometry.dispose();
       material.dispose();

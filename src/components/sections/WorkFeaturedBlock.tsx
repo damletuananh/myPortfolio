@@ -1,6 +1,8 @@
 "use client";
 
-import { Fragment } from "react";
+import { Fragment, useEffect, useRef } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import {
   SITE_CONFIG,
   FEATURED_PROJECTS,
@@ -10,6 +12,7 @@ import {
 import { SignatureDrawSvg } from "@/components/svg/BrandGraphics";
 import { TransitionLink } from "@/components/providers/TransitionProvider";
 import { BigDriftTitle } from "@/components/motion/SplitTitle";
+import { Parallax } from "@/components/motion/Parallax";
 import { WordReveal } from "@/components/motion/WordReveal";
 import { DrawSvg } from "@/components/motion/DrawSvg";
 import { Marquee } from "@/components/motion/Marquee";
@@ -21,8 +24,25 @@ import {
   ActionButton,
 } from "@/components/motion/MicroPrimitives";
 
+gsap.registerPlugin(ScrollTrigger);
+
+const WORK_DRIFT_SEGMENTS = [
+  { text: "W", speed: -0.6 },
+  { text: "O", speed: -1.2 },
+  { text: "RK" },
+];
+
+const WORK_PART_SPEEDS: Record<number, number> = {
+  0: -0.6,
+  1: -1.2,
+};
+
+const FEATURED_TAG_SPEEDS = [1.2, 1.0, 0.5, 0.8, 0.5, -1.0] as const;
+
 function getFeaturedItemClass(style: ProjectItem["layoutStyle"]): string {
   switch (style) {
+    case 1:
+      return "item highlight";
     case 2:
       return "item half smallMarginBottom";
     case 3:
@@ -31,20 +51,33 @@ function getFeaturedItemClass(style: ProjectItem["layoutStyle"]): string {
       return "item half extraPadding";
     case 5:
       return "item bigger";
-    case 1:
     case 6:
+      return "item highlight noMargin";
     default:
       return "item";
   }
 }
 
-function FeaturedProjectCard({ project }: { project: ProjectItem }) {
+function FeaturedProjectCard({
+  project,
+  cardIndex,
+}: {
+  project: ProjectItem;
+  cardIndex: number;
+}) {
   const showBlockAnim = project.layoutStyle === 3;
+  const cardSpeed = FEATURED_TAG_SPEEDS[cardIndex % FEATURED_TAG_SPEEDS.length];
 
   return (
     <article className={getFeaturedItemClass(project.layoutStyle)}>
       <div className={`itemIntro style-${project.layoutStyle}`}>
-        <span className="part">{project.client}</span>
+        <Parallax
+          direction="horizontal"
+          speed={cardSpeed}
+          className="part"
+        >
+          <span>{project.client}</span>
+        </Parallax>
         <span className="part center">
           {project.services.slice(0, 2).join(" · ")}
         </span>
@@ -96,7 +129,7 @@ function FeaturedProjectCard({ project }: { project: ProjectItem }) {
           href={`/project/${project.slug}`}
           className="titleLink"
         >
-          <span className="num">{project.number}</span>
+          <span className="num itemNum">{project.number}</span>
           <span className="textTitle">{project.title}</span>
         </TransitionLink>
         {project.designCredit ? (
@@ -112,11 +145,51 @@ function FeaturedProjectCard({ project }: { project: ProjectItem }) {
 }
 
 export function WorkFeaturedBlock() {
-  const firstHalf = FEATURED_PROJECTS.slice(0, 3);
-  const secondHalf = FEATURED_PROJECTS.slice(3);
+  const sectionRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+
+    const cards = Array.from(section.querySelectorAll<HTMLElement>(".item"));
+
+    const checkVisible = () => {
+      const threshold = window.innerHeight * 0.92;
+      for (const card of cards) {
+        if (card.classList.contains("inview")) continue;
+        const rect = card.getBoundingClientRect();
+        if (rect.top < threshold && rect.bottom > 0) {
+          card.classList.add("inview");
+        }
+      }
+    };
+
+    const ctx = gsap.context(() => {
+      cards.forEach((card) => {
+        const markInview = () => card.classList.add("inview");
+
+        ScrollTrigger.create({
+          trigger: card,
+          start: "top 88%",
+          once: true,
+          onEnter: markInview,
+          onEnterBack: markInview,
+        });
+      });
+
+      checkVisible();
+    }, sectionRef);
+
+    window.addEventListener("portfolio:page-ready", checkVisible);
+
+    return () => {
+      window.removeEventListener("portfolio:page-ready", checkVisible);
+      ctx.revert();
+    };
+  }, []);
 
   return (
-    <section className="workFeaturedBlock">
+    <section ref={sectionRef} className="workFeaturedBlock">
       <div className="contentWrapper">
         <div className="intro">
           <div className="left">
@@ -125,11 +198,8 @@ export function WorkFeaturedBlock() {
 
           <BigDriftTitle
             tag="h2"
-            segments={[
-              { text: "W" },
-              { text: "O", speed: -0.6 },
-              { text: "RK" },
-            ]}
+            segments={WORK_DRIFT_SEGMENTS}
+            partSpeeds={WORK_PART_SPEEDS}
           />
 
           <div className="right">
@@ -139,9 +209,9 @@ export function WorkFeaturedBlock() {
         </div>
 
         <div className="items">
-          {firstHalf.map((project) => (
+          {FEATURED_PROJECTS.map((project, index) => (
             <Fragment key={project.slug}>
-              <FeaturedProjectCard project={project} />
+              <FeaturedProjectCard project={project} cardIndex={index} />
 
               {project.layoutStyle === 2 ? (
                 <div className="contentContainer">
@@ -152,29 +222,27 @@ export function WorkFeaturedBlock() {
                   </div>
                 </div>
               ) : null}
+
+              {project.layoutStyle === 5 ? (
+                <div className="contentContainer smaller hideResp">
+                  <InnerCanvasBox
+                    imageSrc={MID_BIRD_MEDIA.imageSrc}
+                    respImageSrc={MID_BIRD_MEDIA.respImageSrc}
+                    alt={MID_BIRD_MEDIA.alt}
+                    mouseTrigger
+                  />
+                  <LineAnim />
+                  <div className="drawTextContainer">
+                    <DrawSvg triggerOnScroll delay={0.1}>
+                      <SignatureDrawSvg variant="birdCallout" />
+                    </DrawSvg>
+                  </div>
+                  <div className="text">
+                    <WordReveal text={SITE_CONFIG.birdJokeText} tag="p" />
+                  </div>
+                </div>
+              ) : null}
             </Fragment>
-          ))}
-
-          <div className="contentContainer smaller hideResp">
-            <InnerCanvasBox
-              imageSrc={MID_BIRD_MEDIA.imageSrc}
-              respImageSrc={MID_BIRD_MEDIA.respImageSrc}
-              alt={MID_BIRD_MEDIA.alt}
-              mouseTrigger
-            />
-            <LineAnim />
-            <div className="drawTextContainer">
-              <DrawSvg triggerOnScroll delay={0.1}>
-                <SignatureDrawSvg variant="birdCallout" />
-              </DrawSvg>
-            </div>
-            <div className="text">
-              <WordReveal text={SITE_CONFIG.birdJokeText} tag="p" />
-            </div>
-          </div>
-
-          {secondHalf.map((project) => (
-            <FeaturedProjectCard key={project.slug} project={project} />
           ))}
         </div>
 
@@ -188,7 +256,7 @@ export function WorkFeaturedBlock() {
             </ActionButton>
           </div>
           <div className="right">
-            <BlockAnim variant={2} className="style-3-anim" />
+            <BlockAnim variant={3} />
           </div>
         </div>
       </div>

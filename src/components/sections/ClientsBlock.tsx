@@ -1,5 +1,8 @@
 "use client";
 
+import { useEffect, useRef, type CSSProperties } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { CLIENTS, SITE_CONFIG } from "@/data/portfolio";
 import {
   LaurelIcon,
@@ -13,13 +16,53 @@ import {
   ActionButton,
 } from "@/components/motion/MicroPrimitives";
 
+gsap.registerPlugin(ScrollTrigger);
+
 export function ClientsBlock() {
+  const sectionRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+
+    const markInview = () => {
+      section.classList.add("inview");
+    };
+
+    const checkVisible = () => {
+      if (section.classList.contains("inview")) return;
+      const rect = section.getBoundingClientRect();
+      if (rect.top < window.innerHeight * 0.9 && rect.bottom > 0) {
+        markInview();
+      }
+    };
+
+    const ctx = gsap.context(() => {
+      ScrollTrigger.create({
+        trigger: section,
+        start: "top 85%",
+        once: true,
+        onEnter: markInview,
+        onEnterBack: markInview,
+      });
+
+      checkVisible();
+    }, sectionRef);
+
+    window.addEventListener("portfolio:page-ready", checkVisible);
+
+    return () => {
+      window.removeEventListener("portfolio:page-ready", checkVisible);
+      ctx.revert();
+    };
+  }, []);
+
   return (
-    <section className="clientsBlock setPrimaryBackground">
+    <section ref={sectionRef} className="clientsBlock setPrimaryBackground">
       <div className="contentWrapper">
         <div className="intro">
           <div className="left">
-            <BlockAnim variant={2} secondary className="style-4-anim" />
+            <BlockAnim variant={4} secondary />
           </div>
 
           <h2 className="bigTitle">
@@ -69,7 +112,11 @@ export function ClientsBlock() {
 
         <div className="clients">
           {CLIENTS.map((client, index) => (
-            <div key={client.id} className="clientWrapper">
+            <div
+              key={client.id}
+              className="clientWrapper"
+              style={{ "--stagger-i": index } as CSSProperties}
+            >
               <LineAnim
                 secondary
                 className={index % 2 === 0 ? "left" : "right"}
@@ -87,7 +134,19 @@ export function ClientsBlock() {
                     rowGap: "0.25em",
                   }}
                 >
-                  <span className="clientTitle">{client.name}</span>
+                  {client.url ? (
+                    <a
+                      href={client.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="clientTitle"
+                      style={{ color: "inherit", textDecoration: "none" }}
+                    >
+                      {client.name}
+                    </a>
+                  ) : (
+                    <span className="clientTitle">{client.name}</span>
+                  )}
                   <span
                     className="clientMeta"
                     style={{
@@ -116,7 +175,6 @@ export function ClientsBlock() {
               </div>
             </div>
           ))}
-          <LineAnim secondary className="right" />
         </div>
 
         <div className="buttons">

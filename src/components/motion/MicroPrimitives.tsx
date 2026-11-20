@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { TransitionLink } from "@/components/providers/TransitionProvider";
@@ -30,11 +30,25 @@ export function LineAnim({
     if (!el) return;
 
     let timer: number | null = null;
+    let activated = false;
+
     const activate = () => {
+      if (activated) return;
+      activated = true;
       if (delay > 0) {
-        timer = window.setTimeout(() => el.classList.add("inview"), delay * 1000);
+        timer = window.setTimeout(
+          () => el.classList.add("inview"),
+          delay * 1000
+        );
       } else {
         el.classList.add("inview");
+      }
+    };
+
+    const checkImmediate = () => {
+      const rect = el.getBoundingClientRect();
+      if (rect.top < window.innerHeight * 0.92) {
+        activate();
       }
     };
 
@@ -47,13 +61,13 @@ export function LineAnim({
         onEnterBack: activate,
       });
 
-      const rect = el.getBoundingClientRect();
-      if (rect.top < window.innerHeight * 0.92) {
-        activate();
-      }
+      checkImmediate();
     }, ref);
 
+    window.addEventListener("portfolio:page-ready", checkImmediate);
+
     return () => {
+      window.removeEventListener("portfolio:page-ready", checkImmediate);
       if (timer !== null) window.clearTimeout(timer);
       ctx.revert();
     };
@@ -75,7 +89,7 @@ export function LineAnim({
 /* -------------------------------------------------------------------------- */
 
 export interface BlockAnimProps {
-  variant?: 1 | 2;
+  variant?: 1 | 2 | 3 | 4;
   secondary?: boolean;
   className?: string;
 }
@@ -122,10 +136,85 @@ export function ToolTipIcon({
   children,
 }: ToolTipIconProps) {
   const body = info ?? text ?? children;
+  const rootRef = useRef<HTMLSpanElement>(null);
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    const onOutsidePointer = (event: Event) => {
+      if (
+        rootRef.current &&
+        event.target instanceof Node &&
+        !rootRef.current.contains(event.target)
+      ) {
+        setOpen(false);
+      }
+    };
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener("pointerdown", onOutsidePointer, {
+      passive: true,
+    });
+    document.addEventListener("keydown", onEscape);
+    return () => {
+      document.removeEventListener("pointerdown", onOutsidePointer);
+      document.removeEventListener("keydown", onEscape);
+    };
+  }, [open]);
+
+  const handleClick = (event: React.MouseEvent<HTMLSpanElement>) => {
+    event.stopPropagation();
+    setOpen((prev) => !prev);
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLSpanElement>) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      event.stopPropagation();
+      setOpen((prev) => !prev);
+    } else if (event.key === "Escape") {
+      setOpen(false);
+    }
+  };
+
+  const handleFocus = (event: React.FocusEvent<HTMLSpanElement>) => {
+    if (event.currentTarget.matches(":focus-visible")) {
+      setOpen(true);
+    }
+  };
+
+  const handleBlur = () => {
+    setOpen(false);
+  };
+
+  const handleMouseLeave = () => {
+    if (open && !document.documentElement.classList.contains("touch")) {
+      setOpen(false);
+    }
+  };
+
+  const accessibleLabel =
+    label && typeof body === "string"
+      ? `${label}: ${body}`
+      : label || (typeof body === "string" ? body : "Additional credit info");
 
   return (
     <span
-      className={`toolTipIcon${small ? " small" : ""}${className ? ` ${className}` : ""}`}
+      ref={rootRef}
+      role="button"
+      tabIndex={0}
+      aria-expanded={open}
+      aria-label={accessibleLabel}
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
+      onFocus={handleFocus}
+      onBlur={handleBlur}
+      onMouseLeave={handleMouseLeave}
+      className={`toolTipIcon${small ? " small" : ""}${open ? " open" : ""}${className ? ` ${className}` : ""}`}
     >
       <span className="icon-quote" aria-hidden="true">
         <svg viewBox="0 0 16 14" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -135,7 +224,18 @@ export function ToolTipIcon({
           />
         </svg>
       </span>
-      <span className={`toolTipWrapper${light ? " light" : ""}`}>
+      <span
+        className={`toolTipWrapper${light ? " light" : ""}`}
+        style={
+          open
+            ? {
+                opacity: 1,
+                transform: "translate(-50%, -0.35em)",
+                pointerEvents: "auto",
+              }
+            : undefined
+        }
+      >
         {label ? <span className="label">{label}</span> : null}
         <span className="info">{body}</span>
       </span>
@@ -224,18 +324,6 @@ export function InnerCanvasBox({
         role={alt ? "img" : undefined}
         aria-label={alt}
       >
-        {videoSrc ? (
-          <video
-            src={videoSrc}
-            muted
-            loop
-            playsInline
-            autoPlay
-            preload="none"
-            className="playVideoCanvasOnScroll"
-            style={{ opacity: 0 }}
-          />
-        ) : null}
         {children}
       </div>
     </div>

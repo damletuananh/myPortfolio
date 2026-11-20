@@ -6,6 +6,10 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
 
+function getSpeedIndicator(): number {
+  return window.innerWidth < window.innerHeight ? 30 : 20;
+}
+
 export interface SplitTitleProps {
   lines: string[];
   variant?: "huge" | "big";
@@ -31,6 +35,9 @@ export function SplitTitle({
 }: SplitTitleProps) {
   const titleRef = useRef<HTMLElement>(null);
 
+  const linesKey = lines.join("\u001F");
+  const lineSpeedsKey = lineSpeeds ? lineSpeeds.join(",") : "";
+
   useEffect(() => {
     const el = titleRef.current;
     if (!el) return;
@@ -42,6 +49,7 @@ export function SplitTitle({
     const fitAndLockRows = () => {
       if (disposed || !el) return;
       const rows = Array.from(el.querySelectorAll<HTMLElement>(":scope > .row"));
+      const isMobile = window.innerWidth <= 580;
 
       if (variant === "huge") {
         el.style.fontSize = "16.25vw";
@@ -60,11 +68,16 @@ export function SplitTitle({
           if (!inner) continue;
           const cs = getComputedStyle(row);
           const padX =
-            parseFloat(cs.paddingLeft || "0") + parseFloat(cs.paddingRight || "0");
-          const rowWidth = row.clientWidth - padX;
+            parseFloat(cs.paddingLeft || "0") +
+            parseFloat(cs.paddingRight || "0");
+          const rowWidth = Math.min(
+            row.clientWidth - padX,
+            window.innerWidth - padX
+          );
           const lineWidth = inner.scrollWidth;
           if (rowWidth > 0 && lineWidth > rowWidth) {
-            const ratio = (rowWidth / lineWidth) * 0.992;
+            const safetyFactor = isMobile ? 0.985 : 0.992;
+            const ratio = (rowWidth / lineWidth) * safetyFactor;
             if (ratio < minScale) minScale = ratio;
           }
         }
@@ -88,21 +101,33 @@ export function SplitTitle({
 
           const cs = getComputedStyle(row);
           const padX =
-            parseFloat(cs.paddingLeft || "0") + parseFloat(cs.paddingRight || "0");
-          const rowWidth = row.clientWidth - padX;
+            parseFloat(cs.paddingLeft || "0") +
+            parseFloat(cs.paddingRight || "0");
+          const padBottom = Math.max(0, parseFloat(cs.paddingBottom || "0"));
+          const rowWidth = Math.min(
+            row.clientWidth - padX,
+            window.innerWidth - padX
+          );
           const lineWidth = inner.scrollWidth;
 
           if (rowWidth > 0 && lineWidth > rowWidth) {
-            const scale = (rowWidth / lineWidth) * 0.992;
+            const safetyFactor = isMobile ? 0.985 : 0.992;
+            const scale = (rowWidth / lineWidth) * safetyFactor;
             inner.style.transformOrigin = origin;
             inner.style.transform = `scale(${scale.toFixed(4)})`;
           }
 
           const lineCs = getComputedStyle(line);
           const mt = Math.max(0, parseFloat(lineCs.marginTop || "0"));
-          const h = inner.getBoundingClientRect().height || line.getBoundingClientRect().height;
+          const h =
+            inner.getBoundingClientRect().height ||
+            line.getBoundingClientRect().height;
           if (h > 0) {
-            row.style.height = `${Math.ceil(h + mt)}px`;
+            // Preserve bottom stroke/descender clearance especially on <= 580px viewports
+            const bottomSafety = isMobile
+              ? Math.max(4, Math.ceil(h * 0.08))
+              : Math.max(2, Math.ceil(h * 0.025));
+            row.style.height = `${Math.ceil(h + mt + padBottom + bottomSafety)}px`;
           }
         }
       } else {
@@ -111,11 +136,16 @@ export function SplitTitle({
           const inner = row.querySelector<HTMLElement>(".lineInner");
           if (!line || !inner) continue;
           row.style.height = "";
+          const cs = getComputedStyle(row);
+          const padBottom = Math.max(0, parseFloat(cs.paddingBottom || "0"));
           const lineCs = getComputedStyle(line);
           const mt = Math.max(0, parseFloat(lineCs.marginTop || "0"));
-          const h = inner.getBoundingClientRect().height || line.getBoundingClientRect().height;
+          const h =
+            inner.getBoundingClientRect().height ||
+            line.getBoundingClientRect().height;
           if (h > 0) {
-            row.style.height = `${Math.ceil(h + mt)}px`;
+            const bottomSafety = isMobile ? 3 : 1;
+            row.style.height = `${Math.ceil(h + mt + padBottom + bottomSafety)}px`;
           }
         }
       }
@@ -174,22 +204,35 @@ export function SplitTitle({
         });
       }
 
-      if (lineSpeeds && lineSpeeds.length > 0) {
+      const parsedLineSpeeds = lineSpeedsKey
+        ? lineSpeedsKey
+            .split(",")
+            .map((v) => (v.trim() === "" ? undefined : Number(v)))
+        : undefined;
+
+      if (parsedLineSpeeds && parsedLineSpeeds.length > 0) {
         const mm = gsap.matchMedia();
         mm.add("(min-width: 581px)", () => {
-          const rows = Array.from(el.querySelectorAll<HTMLElement>(":scope > .row"));
+          const rows = Array.from(
+            el.querySelectorAll<HTMLElement>(":scope > .row")
+          );
           rows.forEach((row, index) => {
-            const speed = lineSpeeds[index];
-            if (speed === undefined || speed === 0) return;
-            const speedIndicator =
-              window.innerWidth < window.innerHeight ? 30 : 20;
-            const delta = ((window.innerHeight * 0.45) / speedIndicator) * speed;
+            const speed = parsedLineSpeeds[index];
+            if (speed === undefined || Number.isNaN(speed) || speed === 0) {
+              return;
+            }
+
             if (scrollPosition === "top") {
               gsap.fromTo(
                 row,
                 { y: 0 },
                 {
-                  y: -delta,
+                  y: () =>
+                    -(
+                      (Math.max(el.offsetHeight, window.innerHeight * 0.55) /
+                        (getSpeedIndicator() * 2)) *
+                      speed
+                    ),
                   ease: "none",
                   force3D: true,
                   scrollTrigger: {
@@ -202,11 +245,13 @@ export function SplitTitle({
                 }
               );
             } else {
+              const getDelta = () =>
+                ((window.innerHeight * 0.5) / getSpeedIndicator()) * speed;
               gsap.fromTo(
                 row,
-                { y: delta },
+                { y: () => getDelta() },
                 {
-                  y: -delta,
+                  y: () => -getDelta(),
                   ease: "none",
                   force3D: true,
                   scrollTrigger: {
@@ -232,7 +277,15 @@ export function SplitTitle({
       window.removeEventListener("portfolio:page-ready", scheduleFit);
       ctx.revert();
     };
-  }, [lines, variant, immediate, delay, align, lineSpeeds, scrollPosition]);
+  }, [
+    linesKey,
+    variant,
+    immediate,
+    delay,
+    align,
+    lineSpeedsKey,
+    scrollPosition,
+  ]);
 
   const Tag = tag;
   const baseClass = variant === "big" ? "bigTitle" : "hugeTitle";
@@ -270,7 +323,10 @@ export interface BigDriftSegment {
 }
 
 export interface BigDriftTitleProps {
-  segments: BigDriftSegment[];
+  segments?: Array<BigDriftSegment | string>;
+  parts?: string[];
+  partSpeeds?: Record<number, number>;
+  driftSpeed?: number;
   tag?: "h1" | "h2" | "div";
   className?: string;
   delay?: number;
@@ -278,15 +334,48 @@ export interface BigDriftTitleProps {
 
 export function BigDriftTitle({
   segments,
+  parts,
+  partSpeeds,
+  driftSpeed,
   tag = "h2",
   className = "",
   delay = 0,
 }: BigDriftTitleProps) {
   const containerRef = useRef<HTMLElement>(null);
 
+  const rawItems = segments ?? parts ?? [];
+  const normalizedSegments: BigDriftSegment[] = rawItems.map((item, idx) => {
+    const base: BigDriftSegment =
+      typeof item === "string" ? { text: item } : item;
+    const speedFromMap = partSpeeds?.[idx];
+    const resolvedSpeed =
+      speedFromMap !== undefined
+        ? speedFromMap
+        : base.speed !== undefined
+          ? base.speed
+          : driftSpeed !== undefined && idx === Math.floor(rawItems.length / 2)
+            ? driftSpeed
+            : undefined;
+    return {
+      ...base,
+      speed: resolvedSpeed,
+    };
+  });
+
+  const speedsKey = normalizedSegments
+    .map((s) => (s.speed !== undefined ? String(s.speed) : ""))
+    .join(",");
+  const textKey = normalizedSegments.map((s) => s.text).join("\u001F");
+
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
+
+    const resolvedSpeeds = speedsKey
+      ? speedsKey
+          .split(",")
+          .map((v) => (v.trim() === "" ? undefined : Number(v)))
+      : [];
 
     const ctx = gsap.context(() => {
       const lines = el.querySelectorAll<HTMLElement>(":scope > .row > .line");
@@ -308,21 +397,21 @@ export function BigDriftTitle({
 
       const mm = gsap.matchMedia();
       mm.add("(min-width: 581px)", () => {
-        const rows = Array.from(el.querySelectorAll<HTMLElement>(":scope > .row"));
+        const rows = Array.from(
+          el.querySelectorAll<HTMLElement>(":scope > .row")
+        );
         rows.forEach((row, index) => {
-          const speed = segments[index]?.speed;
-          if (speed === undefined || speed === 0) return;
+          const speed = resolvedSpeeds[index];
+          if (speed === undefined || Number.isNaN(speed) || speed === 0) return;
 
-          const speedIndicator =
-            window.innerWidth < window.innerHeight ? 30 : 20;
-          const amplitude =
-            ((window.innerHeight * 0.55) / speedIndicator) * speed;
+          const getAmplitude = () =>
+            ((window.innerHeight * 0.5) / getSpeedIndicator()) * speed;
 
           gsap.fromTo(
             row,
-            { x: amplitude },
+            { x: () => getAmplitude() },
             {
-              x: -amplitude,
+              x: () => -getAmplitude(),
               ease: "none",
               force3D: true,
               scrollTrigger: {
@@ -341,7 +430,7 @@ export function BigDriftTitle({
     return () => {
       ctx.revert();
     };
-  }, [segments, delay]);
+  }, [textKey, speedsKey, delay]);
 
   const Tag = tag;
 
@@ -350,12 +439,14 @@ export function BigDriftTitle({
       ref={containerRef as React.RefObject<HTMLHeadingElement & HTMLDivElement>}
       className={`bigTitle ${className}`.trim()}
     >
-      {segments.map((seg, idx) => (
+      {normalizedSegments.map((seg, idx) => (
         <span
           key={idx}
           className={`row inline-block align-top overflow-hidden ${seg.className ?? ""}`.trim()}
           data-scroll-speed={seg.speed !== undefined ? seg.speed : undefined}
-          data-scroll-direction={seg.speed !== undefined ? "horizontal" : undefined}
+          data-scroll-direction={
+            seg.speed !== undefined ? "horizontal" : undefined
+          }
         >
           <span className="line" style={{ display: "inline-block" }}>
             {seg.text}

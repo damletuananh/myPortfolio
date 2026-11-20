@@ -18,10 +18,19 @@ import { useThemeBackground } from "./ThemeBackgroundProvider";
 
 export type CurtainVariant = "nav" | "menu";
 
+export interface CurtainCloseOptions {
+  fromMenu?: boolean;
+}
+
 export interface CurtainController {
-  closeCurtain: (variant: CurtainVariant) => Promise<void>;
+  closeCurtain: (
+    variant: CurtainVariant,
+    options?: CurtainCloseOptions
+  ) => Promise<void>;
   openCurtain: (variant: CurtainVariant) => Promise<void>;
 }
+
+const NAV_REVEAL_OFFSET_SEC = 0.35;
 
 export interface TransitionContextValue {
   navigate: (href: string) => Promise<void>;
@@ -96,6 +105,7 @@ export function TransitionProvider({
 
   const lenisRef = useRef(lenis);
   const refreshRef = useRef(refreshBackgrounds);
+  const settledCleanupRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     lenisRef.current = lenis;
@@ -104,6 +114,79 @@ export function TransitionProvider({
   useEffect(() => {
     refreshRef.current = refreshBackgrounds;
   }, [refreshBackgrounds]);
+
+  useEffect(() => {
+    return () => {
+      settledCleanupRef.current?.();
+      settledCleanupRef.current = null;
+    };
+  }, []);
+
+  const scheduleSettledRefresh = useCallback(() => {
+    settledCleanupRef.current?.();
+
+    let disposed = false;
+    let rafId = 0;
+
+    const runRefresh = () => {
+      if (disposed) return;
+      lenisRef.current?.resize();
+      ScrollTrigger.refresh();
+      refreshRef.current();
+    };
+
+    const debouncedRefresh = () => {
+      if (disposed) return;
+      if (rafId) window.cancelAnimationFrame(rafId);
+      rafId = window.requestAnimationFrame(() => {
+        rafId = 0;
+        runRefresh();
+      });
+    };
+
+    // Immediate refresh on route mount
+    runRefresh();
+
+    // Refresh again once fonts finish loading
+    document.fonts?.ready?.then(() => {
+      if (!disposed) debouncedRefresh();
+    });
+
+    // Refresh as pending images inside #pageContainer settle
+    const cleanups: Array<() => void> = [];
+    const pageEl = document.getElementById("pageContainer");
+    if (pageEl) {
+      const imgs = Array.from(pageEl.querySelectorAll<HTMLImageElement>("img"));
+      for (const img of imgs) {
+        if (!img.complete) {
+          const onSettled = () => {
+            img.removeEventListener("load", onSettled);
+            img.removeEventListener("error", onSettled);
+            debouncedRefresh();
+          };
+          img.addEventListener("load", onSettled, { once: true });
+          img.addEventListener("error", onSettled, { once: true });
+          cleanups.push(() => {
+            img.removeEventListener("load", onSettled);
+            img.removeEventListener("error", onSettled);
+          });
+        }
+      }
+    }
+
+    const t1 = window.setTimeout(debouncedRefresh, 260);
+    const t2 = window.setTimeout(debouncedRefresh, 760);
+
+    settledCleanupRef.current = () => {
+      disposed = true;
+      if (rafId) window.cancelAnimationFrame(rafId);
+      window.clearTimeout(t1);
+      window.clearTimeout(t2);
+      for (const fn of cleanups) {
+        fn();
+      }
+    };
+  }, []);
 
   const registerCurtainController = useCallback(
     (controller: CurtainController | null) => {
@@ -140,18 +223,20 @@ export function TransitionProvider({
       lastPathnameRef.current = normalized;
       window.requestAnimationFrame(() => {
         window.requestAnimationFrame(() => {
-          lenisRef.current?.resize();
-          ScrollTrigger.refresh();
-          refreshRef.current();
+          scheduleSettledRefresh();
           window.dispatchEvent(
             new CustomEvent("portfolio:page-ready", {
-              detail: { pathname: normalized },
+              detail: {
+                pathname: normalized,
+                source: "popstate",
+                revealOffset: 0,
+              },
             })
           );
         });
       });
     }
-  }, []);
+  }, [scheduleSettledRefresh]);
 
   const openMenu = useCallback(async () => {
     if (isMenuOpenRef.current || menuBusyRef.current || isTransitioningRef.current) {
@@ -249,7 +334,8 @@ export function TransitionProvider({
       document.documentElement.classList.add("is-changing");
       lockScroll();
 
-      if (isMenuOpenRef.current) {
+      const wasMenuOpen = isMenuOpenRef.current;
+      if (wasMenuOpen) {
         isMenuOpenRef.current = false;
         setIsMenuOpen(false);
         document.documentElement.classList.remove("overflowMenu");
@@ -258,7 +344,9 @@ export function TransitionProvider({
 
       try {
         if (curtainControllerRef.current) {
-          await curtainControllerRef.current.closeCurtain("nav");
+          await curtainControllerRef.current.closeCurtain("nav", {
+            fromMenu: wasMenuOpen,
+          });
         } else {
           const pageEl = document.getElementById("pageContainer");
           if (pageEl) {
@@ -297,17 +385,29 @@ export function TransitionProvider({
         scrollToTop(true);
         await nextAnimationFrame();
 
-        lenisRef.current?.resize();
-        ScrollTrigger.refresh();
-        refreshRef.current();
+        scheduleSettledRefresh();
         window.dispatchEvent(
           new CustomEvent("portfolio:page-ready", {
-            detail: { pathname: targetPath },
+            detail: {
+              pathname: targetPath,
+              source: "nav",
+              revealOffset: NAV_REVEAL_OFFSET_SEC,
+            },
           })
         );
 
         if (curtainControllerRef.current) {
+          window.dispatchEvent(
+            new CustomEvent("portfolio:curtain-opening", {
+              detail: { pathname: targetPath, duration: 0.9 },
+            })
+          );
           await curtainControllerRef.current.openCurtain("nav");
+          window.dispatchEvent(
+            new CustomEvent("portfolio:curtain-opened", {
+              detail: { pathname: targetPath },
+            })
+          );
         } else {
           const pageEl = document.getElementById("pageContainer");
           if (pageEl) {
@@ -325,6 +425,11 @@ export function TransitionProvider({
             }
           }
         }
+
+        // Sync ScrollTrigger coordinates once the curtain finishes lifting
+        lenisRef.current?.resize();
+        ScrollTrigger.refresh();
+        refreshRef.current();
       } finally {
         document.documentElement.classList.remove("is-changing");
         unlockScroll();
@@ -332,7 +437,14 @@ export function TransitionProvider({
         setIsTransitioning(false);
       }
     },
-    [closeMenu, lockScroll, router, scrollToTop, unlockScroll]
+    [
+      closeMenu,
+      lockScroll,
+      router,
+      scheduleSettledRefresh,
+      scrollToTop,
+      unlockScroll,
+    ]
   );
 
   const value = useMemo<TransitionContextValue>(

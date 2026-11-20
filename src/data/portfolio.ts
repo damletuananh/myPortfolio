@@ -35,6 +35,8 @@ export interface SiteConfig {
   birdJokeText: string;
   locationLabel: string;
   coordinates: string;
+  coordinateLines: [string, string];
+  locationUrl: string;
   addressLines: string[];
   email: string;
   barcodeLabel: string;
@@ -143,6 +145,7 @@ export interface AboutContentData {
     left: string;
     right: string;
   };
+  headerCenterNote: string;
   tags: string[];
   introParagraph: string;
   sinceHeadline: string;
@@ -211,7 +214,9 @@ export const SITE_CONFIG: SiteConfig = {
   birdJokeText:
     "(Yes, that’s Cún—my home nickname, 2006 Year of the Dog emblem, and reminder to stay sharp yet kind.)",
   locationLabel: "Ho Chi Minh City",
-  coordinates: "/ 10.7769° N // 106.7008° E",
+  coordinates: "/ 10.7770° N // 106.6954° E",
+  coordinateLines: ["/ 10.7770° N", "// 106.6954° E"],
+  locationUrl: "https://www.google.com/maps/place/Ho+Chi+Minh+City,+Vietnam/",
   addressLines: ["Dam Le Tuan Anh", "Ho Chi Minh City, Vietnam"],
   email: "damletuananh123@gmail.com",
   barcodeLabel: "damletuananh123@gmail.com",
@@ -274,6 +279,11 @@ export const MID_MASCOT_MEDIA = MID_BIRD_MEDIA;
 export const PROFILE_PORTRAIT_MEDIA: MediaAsset = {
   imageSrc: "/media/profile/tuan-anh-portrait.jpg",
   alt: "Studio portrait of Dam Le Tuan Anh, Software Engineering student at FPT University Ho Chi Minh City",
+};
+
+export const CONTACT_FOOTBALL_MEDIA: MediaAsset = {
+  imageSrc: "/media/profile/football-with-friends.jpg",
+  alt: "Dam Le Tuan Anh smiling outdoors with friends after playing football",
 };
 
 export const ABOUT_BIRD_MEDIA: MediaAsset = PROFILE_PORTRAIT_MEDIA;
@@ -918,7 +928,9 @@ export const SERVICES: ServiceItem[] = [
 
 export const ABOUT_CONTENT: AboutContentData = {
   title: "About",
-  headerSplit: { left: "DAM", right: "LE" },
+  headerSplit: { left: "TUAN", right: "ANH" },
+  headerCenterNote:
+    "Full-Stack Developer & System Thinker at FPT University HCMC — building calm architecture, applied AI & tactile craft.",
   tags: [
     "/Software Engineering",
     "/System Thinking",

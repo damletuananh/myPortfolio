@@ -150,10 +150,16 @@ export function ThemeBackgroundProvider({
       setIsHeaderSecondary(activeIndices.size > 0);
     };
 
+    const headerBar = document.querySelector<HTMLElement>("header .headerBar");
+    const headerThreshold = Math.max(
+      24,
+      Math.round((headerBar?.offsetHeight || 90) / 2)
+    );
+
     targets.forEach((el, idx) => {
       const st = ScrollTrigger.create({
         trigger: el,
-        start: "top 90px",
+        start: `top ${headerThreshold}px`,
         end: "bottom top",
         onEnter: () => {
           activeIndices.add(idx);
@@ -174,7 +180,7 @@ export function ThemeBackgroundProvider({
       });
 
       const r = el.getBoundingClientRect();
-      if (st.isActive || (r.top <= 90 && r.bottom > 0)) {
+      if (st.isActive || (r.top <= headerThreshold && r.bottom > 0)) {
         activeIndices.add(idx);
       }
       triggersRef.current.push(st);
@@ -183,13 +189,20 @@ export function ThemeBackgroundProvider({
     syncHeaderState();
   }, [killOwnTriggers]);
 
-  // Initial touch detection, background canvas reveal timing, and animated favicon
+  // Touch-only detection, background canvas reveal timing, and animated favicon
   useEffect(() => {
-    const isTouch =
-      "ontouchstart" in window ||
-      navigator.maxTouchPoints > 0 ||
-      window.matchMedia("(pointer: coarse)").matches;
-    document.documentElement.classList.toggle("touch", isTouch);
+    const touchMedia = window.matchMedia("(hover: none) and (pointer: coarse)");
+    const syncTouchClass = () => {
+      document.documentElement.classList.toggle("touch", touchMedia.matches);
+    };
+    syncTouchClass();
+
+    const hasModernListener = typeof touchMedia.addEventListener === "function";
+    if (hasModernListener) {
+      touchMedia.addEventListener("change", syncTouchClass);
+    } else if (typeof touchMedia.addListener === "function") {
+      touchMedia.addListener(syncTouchClass);
+    }
 
     const revealDelay = window.location.pathname === "/" ? 2900 : 900;
     const bgTimer = window.setTimeout(() => {
@@ -197,22 +210,46 @@ export function ThemeBackgroundProvider({
     }, revealDelay);
 
     let frameIdx = 0;
-    const faviconInterval = window.setInterval(() => {
-      frameIdx = (frameIdx + 1) % FAVICON_FRAMES.length;
-      let link = document.querySelector<HTMLLinkElement>(
-        'link#favicon, link[rel="icon"]'
+    const applyFaviconFrame = (href: string) => {
+      const iconLinks = Array.from(
+        document.querySelectorAll<HTMLLinkElement>(
+          'link#favicon, link[rel="icon"], link[rel="shortcut icon"]'
+        )
       );
-      if (!link) {
-        link = document.createElement("link");
+
+      if (iconLinks.length === 0) {
+        const link = document.createElement("link");
         link.id = "favicon";
         link.rel = "icon";
         link.type = "image/png";
+        link.href = href;
         document.head.appendChild(link);
+        return;
       }
-      link.href = FAVICON_FRAMES[frameIdx];
+
+      for (const link of iconLinks) {
+        link.type = "image/png";
+        if (link.hasAttribute("sizes")) {
+          link.removeAttribute("sizes");
+        }
+        if (link.getAttribute("href") !== href) {
+          link.href = href;
+        }
+      }
+    };
+
+    applyFaviconFrame(FAVICON_FRAMES[0]);
+    const faviconInterval = window.setInterval(() => {
+      frameIdx = (frameIdx + 1) % FAVICON_FRAMES.length;
+      applyFaviconFrame(FAVICON_FRAMES[frameIdx]);
     }, 450);
 
     return () => {
+      if (hasModernListener) {
+        touchMedia.removeEventListener("change", syncTouchClass);
+      } else if (typeof touchMedia.removeListener === "function") {
+        touchMedia.removeListener(syncTouchClass);
+      }
       window.clearTimeout(bgTimer);
       window.clearInterval(faviconInterval);
     };

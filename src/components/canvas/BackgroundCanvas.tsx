@@ -28,6 +28,14 @@ const FRAGMENT_SHADER = `
   }
 
   bool isUnderMouse(vec2 st, vec2 mouseCoord, vec2 scale) {
+    if (
+      mouseCoord.x < 0.0 ||
+      mouseCoord.y < 0.0 ||
+      mouseCoord.x > 1.0 ||
+      mouseCoord.y > 1.0
+    ) {
+      return false;
+    }
     vec2 gridCoord = floor(st * scale);
     vec2 mouseCell = floor(mouseCoord * scale);
     return abs(gridCoord.x - mouseCell.x) < 0.5 &&
@@ -98,7 +106,7 @@ export function BackgroundCanvas() {
     const uniforms = {
       u_time: { value: 0.0 },
       u_resolution: { value: new THREE.Vector2(width, height) },
-      u_mouse: { value: new THREE.Vector2(0.5, 0.5) },
+      u_mouse: { value: new THREE.Vector2(-1.0, -1.0) },
       u_scale: { value: new THREE.Vector2(initScaleX, initScaleY) },
       u_size: { value: 0.0 },
     };
@@ -115,12 +123,26 @@ export function BackgroundCanvas() {
     const plane = new THREE.Mesh(planeGeometry, material);
     scene.add(plane);
 
+    const clearMouse = () => {
+      uniforms.u_mouse.value.set(-1.0, -1.0);
+    };
+
     const onMouseMove = (e: MouseEvent) => {
+      if (document.documentElement.classList.contains("touch")) {
+        clearMouse();
+        return;
+      }
       const vw = window.innerWidth || 1;
       const vh = window.innerHeight || 1;
       const mouseX = e.clientX / vw;
       const mouseY = 1.0 - e.clientY / vh;
       uniforms.u_mouse.value.set(mouseX, mouseY);
+    };
+
+    const onMouseOut = (e: MouseEvent) => {
+      if (!e.relatedTarget) {
+        clearMouse();
+      }
     };
 
     const onResize = () => {
@@ -136,6 +158,11 @@ export function BackgroundCanvas() {
     };
 
     document.addEventListener("mousemove", onMouseMove, { passive: true });
+    document.documentElement.addEventListener("mouseleave", clearMouse, {
+      passive: true,
+    });
+    document.addEventListener("mouseout", onMouseOut, { passive: true });
+    window.addEventListener("blur", clearMouse);
     window.addEventListener("resize", onResize);
 
     let rafId = 0;
@@ -156,6 +183,9 @@ export function BackgroundCanvas() {
     return () => {
       cancelAnimationFrame(rafId);
       document.removeEventListener("mousemove", onMouseMove);
+      document.documentElement.removeEventListener("mouseleave", clearMouse);
+      document.removeEventListener("mouseout", onMouseOut);
+      window.removeEventListener("blur", clearMouse);
       window.removeEventListener("resize", onResize);
       planeGeometry.dispose();
       material.dispose();

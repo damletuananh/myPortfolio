@@ -1,15 +1,22 @@
 "use client";
 
-import { Fragment, useState, type FormEvent } from "react";
+import {
+  Fragment,
+  useEffect,
+  useRef,
+  useState,
+  type FormEvent,
+} from "react";
 import {
   SITE_CONFIG,
   CONTACT_CONTENT,
-  PROFILE_PORTRAIT_MEDIA,
+  CONTACT_FOOTBALL_MEDIA,
 } from "@/data/portfolio";
 import {
   SignatureDrawSvg,
   BarcodeSvg,
 } from "@/components/svg/BrandGraphics";
+import { useLenisContext } from "@/components/providers/LenisProvider";
 import { SplitTitle } from "@/components/motion/SplitTitle";
 import { WordReveal } from "@/components/motion/WordReveal";
 import { DrawSvg } from "@/components/motion/DrawSvg";
@@ -33,12 +40,28 @@ const INITIAL_VALUES: ContactFormValues = {
   message: "",
 };
 
+const CONTACT_TITLE_LINES = [CONTACT_CONTENT.title];
+
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function ContactBlock() {
+  const { lenis } = useLenisContext();
+  const formWrapperRef = useRef<HTMLDivElement>(null);
+
+  const [inView, setInView] = useState(false);
   const [values, setValues] = useState<ContactFormValues>(INITIAL_VALUES);
   const [errors, setErrors] = useState<ContactFormErrors>({});
   const [submitted, setSubmitted] = useState(false);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setInView(true);
+    }, 100);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, []);
 
   const validate = (candidate: ContactFormValues): ContactFormErrors => {
     const nextErrors: ContactFormErrors = {};
@@ -68,6 +91,14 @@ export function ContactBlock() {
     const validationErrors = validate(values);
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
+      const formEl = formWrapperRef.current;
+      if (formEl) {
+        if (lenis) {
+          lenis.scrollTo(formEl, { offset: -120, duration: 0.9 });
+        } else {
+          formEl.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }
       return;
     }
     setErrors({});
@@ -87,13 +118,13 @@ export function ContactBlock() {
   )}`;
 
   return (
-    <section className="contactBlock">
+    <section className={`contactBlock${inView ? " inview" : ""}`}>
       <div className="contentWrapper">
         <div className="intro">
           <SplitTitle
             variant="huge"
             tag="h1"
-            lines={[CONTACT_CONTENT.title]}
+            lines={CONTACT_TITLE_LINES}
             immediate
             delay={0.1}
           />
@@ -111,16 +142,18 @@ export function ContactBlock() {
               tag="p"
               className="text"
             />
-            <InnerCanvasBox
-              imageSrc={PROFILE_PORTRAIT_MEDIA.imageSrc}
-              respImageSrc={PROFILE_PORTRAIT_MEDIA.respImageSrc}
-              alt={PROFILE_PORTRAIT_MEDIA.alt}
-              mouseTrigger
-            />
-            <div className="drawTextContainer">
-              <DrawSvg triggerOnScroll delay={0.1}>
-                <SignatureDrawSvg variant="birdCallout" />
-              </DrawSvg>
+            <div className="contactMediaGroup">
+              <div className="drawTextContainer">
+                <DrawSvg triggerOnScroll delay={0.1}>
+                  <SignatureDrawSvg variant="contactCallout" />
+                </DrawSvg>
+              </div>
+              <InnerCanvasBox
+                imageSrc={CONTACT_FOOTBALL_MEDIA.imageSrc}
+                respImageSrc={CONTACT_FOOTBALL_MEDIA.respImageSrc}
+                alt={CONTACT_FOOTBALL_MEDIA.alt}
+                mouseTrigger
+              />
             </div>
           </div>
 
@@ -197,7 +230,10 @@ export function ContactBlock() {
           </div>
 
           <div className="col">
-            <div className={`formWrapper${submitted ? " submitted" : ""}`}>
+            <div
+              ref={formWrapperRef}
+              className={`formWrapper${submitted ? " submitted" : ""}`}
+            >
               <form onSubmit={handleSubmit} noValidate>
                 {CONTACT_CONTENT.questions.map((field) => (
                   <div key={field.id} className="field">
@@ -265,8 +301,18 @@ export function ContactBlock() {
           <div className="col">
             <BlockAnim variant={1} />
             <div className="location">
-              <span>{SITE_CONFIG.locationLabel}</span>
-              <span>{SITE_CONFIG.coordinates}</span>
+              <a
+                href={SITE_CONFIG.locationUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="locationLink"
+                title="View Ho Chi Minh City on Google Maps"
+                aria-label="Open Ho Chi Minh City on Google Maps (10.7770° N, 106.6954° E)"
+              >
+                {SITE_CONFIG.coordinateLines[0]}
+                <br />
+                {SITE_CONFIG.coordinateLines[1]}
+              </a>
             </div>
           </div>
         </div>

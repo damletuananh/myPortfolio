@@ -126,10 +126,19 @@ export function bindMosaicHover(
   coordElement: HTMLElement,
   uniforms: MosaicUniforms
 ): () => void {
-  let hasEntered = false;
+  let needsSnapOnEntry = true;
+  let isStrengthRamping = false;
+  let firstMoveDelayPending = true;
+  let decayTween: gsap.core.Tween | null = null;
 
   const isTouchMode = () =>
     document.documentElement.classList.contains("touch");
+
+  const onMouseEnter = () => {
+    if (isTouchMode()) return;
+    isStrengthRamping = false;
+    firstMoveDelayPending = true;
+  };
 
   const onMouseMove = (e: MouseEvent) => {
     if (isTouchMode()) return;
@@ -139,28 +148,40 @@ export function bindMosaicHover(
     const mouseX = (e.clientX - rect.left) / rect.width;
     const mouseY = 1.0 - (e.clientY - rect.top) / rect.height;
 
-    if (!hasEntered) {
-      uniforms.u_mouse.value.set(mouseX, mouseY);
-      hasEntered = true;
+    const mouseDuration = needsSnapOnEntry ? 0 : 0.3;
+    needsSnapOnEntry = false;
+
+    const strengthDelay = firstMoveDelayPending ? 0.2 : 0;
+    firstMoveDelayPending = false;
+
+    if (decayTween) {
+      decayTween.kill();
+      decayTween = null;
     }
 
-    gsap.to(uniforms.u_strength, {
-      value: 0.8,
-      duration: 0.2,
-      ease: "power2.out",
-      overwrite: "auto",
-    });
+    if (!isStrengthRamping) {
+      isStrengthRamping = true;
+      gsap.to(uniforms.u_strength, {
+        value: 0.8,
+        duration: 0.6,
+        delay: strengthDelay,
+        ease: "power2.out",
+        overwrite: true,
+      });
+    }
 
     gsap.to(uniforms.u_mouse.value, {
       x: mouseX,
       y: mouseY,
-      duration: 0.3,
+      duration: mouseDuration,
       ease: "power2.out",
-      overwrite: "auto",
+      overwrite: true,
       onComplete: () => {
-        gsap.to(uniforms.u_strength, {
+        isStrengthRamping = false;
+        decayTween = gsap.to(uniforms.u_strength, {
           value: 0.0,
-          duration: 0.3,
+          duration: 0.6,
+          delay: 0.3,
           ease: "power2.out",
           overwrite: "auto",
         });
@@ -169,22 +190,34 @@ export function bindMosaicHover(
   };
 
   const onMouseLeave = () => {
-    hasEntered = false;
+    needsSnapOnEntry = true;
+    isStrengthRamping = false;
+    firstMoveDelayPending = true;
+    if (decayTween) {
+      decayTween.kill();
+      decayTween = null;
+    }
     gsap.killTweensOf(uniforms.u_mouse.value);
     gsap.to(uniforms.u_strength, {
       value: 0.0,
-      duration: 0.3,
+      duration: 0.6,
       ease: "power2.out",
-      overwrite: "auto",
+      overwrite: true,
     });
   };
 
+  hitTarget.addEventListener("mouseenter", onMouseEnter, { passive: true });
   hitTarget.addEventListener("mousemove", onMouseMove, { passive: true });
   hitTarget.addEventListener("mouseleave", onMouseLeave, { passive: true });
 
   return () => {
+    hitTarget.removeEventListener("mouseenter", onMouseEnter);
     hitTarget.removeEventListener("mousemove", onMouseMove);
     hitTarget.removeEventListener("mouseleave", onMouseLeave);
+    if (decayTween) {
+      decayTween.kill();
+      decayTween = null;
+    }
     gsap.killTweensOf(uniforms.u_mouse.value);
     gsap.killTweensOf(uniforms.u_strength);
   };
@@ -267,8 +300,17 @@ export function PageCanvas() {
     syncScrollTransform();
 
     const onResize = () => {
-      // Only resize canvas height when width changes to avoid mobile URL-bar jitter
-      if (window.innerWidth !== dimensionsRef.current.width) {
+      const w = window.innerWidth || 1;
+      const h = window.innerHeight || 1;
+      const widthChanged = w !== dimensionsRef.current.width;
+      const heightChanged = h !== dimensionsRef.current.height;
+      const isTouchOnly = document.documentElement.classList.contains("touch");
+      // Handle desktop height-only resizes cleanly while avoiding small mobile URL-bar jitter
+      const isDesktopHeightResize = !isTouchOnly && w > 1080 && heightChanged;
+      const isLargeHeightShift =
+        Math.abs(h - dimensionsRef.current.height) > 160;
+
+      if (widthChanged || isDesktopHeightResize || isLargeHeightShift) {
         applySize();
       }
     };
@@ -394,8 +436,12 @@ export function PageCanvas() {
       }
     };
 
-    const buildSceneForElement = (el: HTMLElement): PagePlaneItem => {
+    const buildSceneForElement = (
+      el: HTMLElement,
+      navRevealOffset = 0
+    ): PagePlaneItem => {
       let disposed = false;
+      let videoBound = false;
       const triggers: ScrollTrigger[] = [];
       const ownedTextures: THREE.Texture[] = [];
       let createdVideoEl: HTMLVideoElement | null = null;
@@ -404,13 +450,17 @@ export function PageCanvas() {
       let revealFallbackTimer: number | null = null;
 
       const onVideoData = () => {
-        if (disposed || !boundVideoEl) return;
+        if (disposed || videoBound || !boundVideoEl) return;
         if (
           boundVideoEl.readyState < HTMLMediaElement.HAVE_CURRENT_DATA ||
           boundVideoEl.videoWidth <= 0
         ) {
           return;
         }
+        videoBound = true;
+        boundVideoEl.removeEventListener("loadeddata", onVideoData);
+        boundVideoEl.removeEventListener("canplay", onVideoData);
+
         const vidTex = new THREE.VideoTexture(boundVideoEl);
         vidTex.colorSpace = THREE.SRGBColorSpace;
         vidTex.generateMipmaps = true;
@@ -487,14 +537,17 @@ export function PageCanvas() {
       let pendingReveal = false;
       let imageLoaded = false;
 
+      const isAboveFold = isHeaderHero || rect.top < window.innerHeight * 0.95;
+
       const runRevealTween = () => {
         if (disposed || hasRevealed) return;
         hasRevealed = true;
+        const navOffset = isAboveFold ? navRevealOffset : 0;
         gsap.to(uniforms.u_time, {
           value: 3.0,
           duration: 2.0,
-          delay: 0.15 + delayAttr,
-          ease: "power2.out",
+          delay: 0.15 + delayAttr + navOffset,
+          ease: "power1.out",
           overwrite: "auto",
         });
       };
@@ -536,9 +589,11 @@ export function PageCanvas() {
             // If VideoTexture already took over, keep video unless fallback
             if (
               !asFallback &&
-              boundVideoEl &&
-              boundVideoEl.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA &&
-              boundVideoEl.videoWidth > 0
+              (videoBound ||
+                (boundVideoEl &&
+                  boundVideoEl.readyState >=
+                    HTMLMediaElement.HAVE_CURRENT_DATA &&
+                  boundVideoEl.videoWidth > 0))
             ) {
               tex.dispose();
               return;
@@ -689,8 +744,10 @@ export function PageCanvas() {
 
       const dispose = () => {
         disposed = true;
+        videoBound = false;
         cleanupHover();
         gsap.killTweensOf(uniforms.u_time);
+        el.classList.remove("hide", "loaded");
 
         if (bgObserver) {
           bgObserver.disconnect();
@@ -709,8 +766,8 @@ export function PageCanvas() {
           boundVideoEl.removeEventListener("loadeddata", onVideoData);
           boundVideoEl.removeEventListener("canplay", onVideoData);
           boundVideoEl.removeEventListener("error", onVideoError);
+          boundVideoEl.pause();
           if (createdVideoEl) {
-            createdVideoEl.pause();
             createdVideoEl.removeAttribute("src");
             createdVideoEl.load();
             createdVideoEl.remove();
@@ -752,29 +809,40 @@ export function PageCanvas() {
       );
     };
 
-    const rebuildScenes = () => {
+    const rebuildScenes = (navRevealOffset = 0) => {
       if (cancelled) return;
       const elements = queryCanvasElements();
 
-      if (isSameElementList(elements)) {
+      if (isSameElementList(elements) && navRevealOffset === 0) {
         ScrollTrigger.refresh();
         ensureLoopRef.current();
         return;
       }
 
       teardownScenes();
-      scenesRef.current = elements.map(buildSceneForElement);
+      scenesRef.current = elements.map((el) =>
+        buildSceneForElement(el, navRevealOffset)
+      );
       ScrollTrigger.refresh();
       ensureLoopRef.current();
     };
 
     if (!document.documentElement.classList.contains("is-changing")) {
-      rafHandle = requestAnimationFrame(rebuildScenes);
+      rafHandle = requestAnimationFrame(() => rebuildScenes(0));
     }
 
-    const onPageReady = () => {
+    const onPageReady = (event: Event) => {
       cancelAnimationFrame(rafHandle);
-      rebuildScenes();
+      const detail = (
+        event as CustomEvent<{ source?: string; revealOffset?: number }>
+      ).detail;
+      const navOffset =
+        detail?.source === "nav"
+          ? typeof detail.revealOffset === "number"
+            ? detail.revealOffset
+            : 0.35
+          : 0;
+      rebuildScenes(navOffset);
     };
 
     const pageContainer = document.getElementById("pageContainer");
@@ -787,7 +855,7 @@ export function PageCanvas() {
             return;
           }
           cancelAnimationFrame(rafHandle);
-          rafHandle = requestAnimationFrame(rebuildScenes);
+          rafHandle = requestAnimationFrame(() => rebuildScenes(0));
         })
       : null;
 

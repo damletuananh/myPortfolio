@@ -29,39 +29,67 @@ export function Parallax({
     const el = containerRef.current;
     if (!el || speed === 0) return;
 
+    const resolveTrigger = (): HTMLElement => {
+      if (el.offsetHeight >= 4) return el;
+      const canvasChild = el.querySelector<HTMLElement>(".canvasContainer");
+      if (canvasChild && canvasChild.offsetHeight >= 4) return canvasChild;
+      const firstSizedChild = Array.from(el.children).find(
+        (child): child is HTMLElement =>
+          child instanceof HTMLElement && child.offsetHeight >= 4
+      );
+      if (firstSizedChild) return firstSizedChild;
+      return el.closest<HTMLElement>("section") ?? el;
+    };
+
+    const getSpeedIndicator = () =>
+      window.innerWidth < window.innerHeight ? 30 : 20;
+
     const ctx = gsap.context(() => {
       const mm = gsap.matchMedia();
       mm.add("(min-width: 581px)", () => {
-        const offset = speed * 120;
+        const triggerEl = resolveTrigger();
         const prop = direction === "horizontal" ? "x" : "y";
 
         if (position === "top") {
-          gsap.fromTo(
-            el,
-            { [prop]: 0 },
-            {
-              [prop]: -offset,
-              ease: "none",
+          const applyTop = () => {
+            const scrollY = Math.max(
+              0,
+              window.scrollY || window.pageYOffset || 0
+            );
+            const pos = -(scrollY / (getSpeedIndicator() * 2)) * speed;
+            gsap.set(el, {
+              [prop]: pos,
               force3D: true,
-              scrollTrigger: {
-                trigger: el,
-                start: "top top",
-                end: "bottom top",
-                scrub: true,
-                invalidateOnRefresh: true,
-              },
-            }
-          );
+            });
+          };
+
+          applyTop();
+
+          ScrollTrigger.create({
+            trigger: triggerEl,
+            start: "top bottom",
+            end: "bottom top",
+            invalidateOnRefresh: true,
+            onUpdate: (self) => {
+              if (self.isActive) {
+                applyTop();
+              }
+            },
+            onRefresh: applyTop,
+          });
         } else {
+          const getHalfTravel = () =>
+            ((window.innerHeight * 0.5) / getSpeedIndicator()) * speed;
+
           gsap.fromTo(
             el,
-            { [prop]: offset * 0.5 },
+            { [prop]: () => getHalfTravel() },
             {
-              [prop]: -offset * 0.5,
+              [prop]: () => -getHalfTravel(),
               ease: "none",
               force3D: true,
               scrollTrigger: {
-                trigger: el,
+                trigger: triggerEl,
                 start: "top bottom",
                 end: "bottom top",
                 scrub: true,

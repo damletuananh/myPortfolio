@@ -1,5 +1,8 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import type {
   ProjectItem,
   CaseStudyBlock,
@@ -16,6 +19,18 @@ import {
   ToolTipIcon,
 } from "@/components/motion/MicroPrimitives";
 
+gsap.registerPlugin(ScrollTrigger);
+
+const NEXT_DRIFT_SEGMENTS = [
+  { text: "N" },
+  { text: "E", speed: -1.2 },
+  { text: "XT" },
+];
+
+const NEXT_PART_SPEEDS: Record<number, number> = {
+  1: -1.2,
+};
+
 function CaseStudyMedia({
   media,
   aspect169 = false,
@@ -23,17 +38,50 @@ function CaseStudyMedia({
   media: MediaAsset;
   aspect169?: boolean;
 }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !media.videoSrc) return;
+
+    if (typeof IntersectionObserver === "undefined") {
+      video.play().catch(() => {});
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            video.play().catch(() => {});
+          } else {
+            video.pause();
+          }
+        }
+      },
+      { threshold: 0.15 }
+    );
+
+    observer.observe(video);
+
+    return () => {
+      observer.disconnect();
+      video.pause();
+    };
+  }, [media.videoSrc]);
+
   return (
     <div className={`imageWrapper${aspect169 ? " imageWrapper--169" : ""}`}>
       {media.videoSrc ? (
         <video
-          className="innerImage"
+          ref={videoRef}
+          className="innerImage setVideoOnScroll"
           src={media.videoSrc}
           poster={media.imageSrc}
-          autoPlay
           muted
           loop
           playsInline
+          preload="metadata"
           aria-label={media.alt}
         />
       ) : (
@@ -56,7 +104,11 @@ function renderCaseStudyBlock(block: CaseStudyBlock, index: number) {
   switch (block.type) {
     case "fullscreen169":
       return (
-        <section key={index} id={id} className="projectFullscreen169Block">
+        <section
+          key={index}
+          id={id}
+          className="projectBlock projectFullscreen169Block"
+        >
           <div className="contentWrapper">
             <CaseStudyMedia media={block.media} />
             {block.caption ? (
@@ -68,7 +120,11 @@ function renderCaseStudyBlock(block: CaseStudyBlock, index: number) {
 
     case "text":
       return (
-        <section key={index} id={id} className="projectTextBlock">
+        <section
+          key={index}
+          id={id}
+          className="projectBlock projectTextBlock"
+        >
           <div className="contentWrapper smaller">
             <h2 className="smallTitle">{block.heading}</h2>
             <div className="text justify">
@@ -82,7 +138,11 @@ function renderCaseStudyBlock(block: CaseStudyBlock, index: number) {
 
     case "imageText":
       return (
-        <section key={index} id={id} className="projectImageTextBlock">
+        <section
+          key={index}
+          id={id}
+          className="projectBlock projectImageTextBlock"
+        >
           <div className="contentWrapper">
             <div className={`cols${block.align === "right" ? " reverse" : ""}`}>
               <div className="mediaCol">
@@ -108,7 +168,11 @@ function renderCaseStudyBlock(block: CaseStudyBlock, index: number) {
 
     case "split5050":
       return (
-        <section key={index} id={id} className="project5050Block">
+        <section
+          key={index}
+          id={id}
+          className="projectBlock project5050Block"
+        >
           <div className="contentWrapper">
             <div className="cols">
               <div className="col">
@@ -124,7 +188,11 @@ function renderCaseStudyBlock(block: CaseStudyBlock, index: number) {
 
     case "mobileShowcase":
       return (
-        <section key={index} id={id} className="projectMobileBlock">
+        <section
+          key={index}
+          id={id}
+          className="projectBlock projectMobileBlock"
+        >
           <div className="contentWrapper">
             <div className="cols">
               {block.screens.slice(0, 3).map((screen, sIdx) => (
@@ -133,7 +201,7 @@ function renderCaseStudyBlock(block: CaseStudyBlock, index: number) {
                   className="col"
                   style={
                     block.darkSurface
-                      ? { backgroundColor: "#22264B" }
+                      ? { backgroundColor: "var(--color-ink)" }
                       : undefined
                   }
                 >
@@ -147,7 +215,11 @@ function renderCaseStudyBlock(block: CaseStudyBlock, index: number) {
 
     case "awards":
       return (
-        <section key={index} id={id} className="projectAwardsBlock">
+        <section
+          key={index}
+          id={id}
+          className="projectBlock projectAwardsBlock"
+        >
           <div className="contentWrapper small">
             <div className="cols">
               <div className="col">
@@ -189,11 +261,98 @@ export function ProjectDetailBlocks({
   project: ProjectItem;
   nextProject: ProjectItem;
 }) {
+  const rootRef = useRef<HTMLDivElement>(null);
+  const [headerActive, setHeaderActive] = useState(false);
+
   const tagsStyleVariant = Math.min(Math.max(project.tags.length, 2), 4);
 
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setHeaderActive(true);
+    }, 100);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [project.slug]);
+
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+
+    const blocks = Array.from(
+      root.querySelectorAll<HTMLElement>(".projectBlock")
+    );
+    const awards = Array.from(
+      root.querySelectorAll<HTMLElement>(".projectAwardsBlock .award")
+    );
+    const nextItems = Array.from(
+      root.querySelectorAll<HTMLElement>(".nextProjectBlock .item")
+    );
+
+    const revealElements = [...blocks, ...awards, ...nextItems];
+
+    const checkVisible = () => {
+      const threshold = window.innerHeight * 0.92;
+      for (const el of revealElements) {
+        if (el.classList.contains("inview")) continue;
+        const rect = el.getBoundingClientRect();
+        if (rect.top < threshold && rect.bottom > 0) {
+          el.classList.add("inview");
+        }
+      }
+    };
+
+    const ctx = gsap.context(() => {
+      blocks.forEach((block) => {
+        const markInview = () => block.classList.add("inview");
+        ScrollTrigger.create({
+          trigger: block,
+          start: "top 88%",
+          once: true,
+          onEnter: markInview,
+          onEnterBack: markInview,
+        });
+      });
+
+      awards.forEach((award) => {
+        const markInview = () => award.classList.add("inview");
+        ScrollTrigger.create({
+          trigger: award,
+          start: "top 90%",
+          once: true,
+          onEnter: markInview,
+          onEnterBack: markInview,
+        });
+      });
+
+      nextItems.forEach((item) => {
+        const markInview = () => item.classList.add("inview");
+        ScrollTrigger.create({
+          trigger: item,
+          start: "top 88%",
+          once: true,
+          onEnter: markInview,
+          onEnterBack: markInview,
+        });
+      });
+
+      checkVisible();
+    }, rootRef);
+
+    window.addEventListener("portfolio:page-ready", checkVisible);
+
+    return () => {
+      window.removeEventListener("portfolio:page-ready", checkVisible);
+      ctx.revert();
+    };
+  }, [project.slug]);
+
   return (
-    <>
-      <section className="projectHeaderBlock">
+    <div ref={rootRef}>
+      <section
+        className={`projectHeaderBlock${headerActive ? " active" : ""}`}
+      >
         <div className="contentWrapper">
           <SplitTitle
             variant="huge"
@@ -281,11 +440,8 @@ export function ProjectDetailBlocks({
 
             <BigDriftTitle
               tag="h2"
-              segments={[
-                { text: "N" },
-                { text: "E", speed: -0.6 },
-                { text: "XT" },
-              ]}
+              segments={NEXT_DRIFT_SEGMENTS}
+              partSpeeds={NEXT_PART_SPEEDS}
             />
 
             <div className="right">
@@ -326,7 +482,7 @@ export function ProjectDetailBlocks({
                   href={`/project/${nextProject.slug}`}
                   className="titleLink"
                 >
-                  <span className="num">{nextProject.number}</span>
+                  <span className="num itemNum">{nextProject.number}</span>
                   <span className="textTitle">{nextProject.title}</span>
                 </TransitionLink>
                 {nextProject.designCredit ? (
@@ -341,7 +497,7 @@ export function ProjectDetailBlocks({
           </div>
         </div>
       </section>
-    </>
+    </div>
   );
 }
 

@@ -2,8 +2,6 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { SITE_CONFIG, type SocialLink } from "@/data/portfolio";
 import { MvPixelLogo, SignatureDrawSvg } from "@/components/svg/BrandGraphics";
 import {
@@ -11,9 +9,8 @@ import {
   useTransitionNav,
 } from "@/components/providers/TransitionProvider";
 import { useThemeBackground } from "@/components/providers/ThemeBackgroundProvider";
+import { useLenisContext } from "@/components/providers/LenisProvider";
 import { DrawSvg } from "@/components/motion/DrawSvg";
-
-gsap.registerPlugin(ScrollTrigger);
 
 export function SocialGlyph({ platform }: { platform: SocialLink["platform"] }) {
   if (platform === "github") {
@@ -63,16 +60,19 @@ function isNavActive(pathname: string, href: string): boolean {
 export function Header() {
   const pathname = usePathname() ?? "/";
   const { isHeaderSecondary } = useThemeBackground();
-  const { isMenuOpen, toggleMenu } = useTransitionNav();
+  const { isMenuOpen, toggleMenu, closeMenu } = useTransitionNav();
+  const { lenis } = useLenisContext();
 
   const headerRef = useRef<HTMLElement>(null);
   const headerBarRef = useRef<HTMLDivElement>(null);
+  const leftRef = useRef<HTMLDivElement>(null);
+  const rightRef = useRef<HTMLDivElement>(null);
+  const menuBgRef = useRef<HTMLDivElement>(null);
   const hasRevealedRef = useRef(false);
+  const scrolledRef = useRef(false);
 
   const [active, setActive] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [scrollY, setScrollY] = useState(0);
-  const [sideOffset, setSideOffset] = useState(0);
 
   useEffect(() => {
     if (hasRevealedRef.current) {
@@ -90,48 +90,112 @@ export function Header() {
   }, [pathname]);
 
   useEffect(() => {
-    const syncScrollState = () => {
-      const y = Math.max(0, window.scrollY || window.pageYOffset || 0);
+    let rafId = 0;
+
+    const applyScrollDom = () => {
+      rafId = 0;
+      const y = Math.max(
+        0,
+        lenis ? lenis.scroll : window.scrollY || window.pageYOffset || 0
+      );
       const isCompact = window.innerWidth <= 580;
       const barH = headerBarRef.current?.offsetHeight || 90;
+      const threshold = barH / 3;
+      const nextScrolled = !isCompact && y > threshold;
 
-      setScrollY(y);
-      setScrolled(y > 50);
-      setSideOffset(isCompact ? 0 : Math.min(y, barH));
+      if (scrolledRef.current !== nextScrolled) {
+        scrolledRef.current = nextScrolled;
+        setScrolled(nextScrolled);
+      }
+
+      const leftEl = leftRef.current;
+      const rightEl = rightRef.current;
+      const bgEl = menuBgRef.current;
+
+      if (isCompact) {
+        if (leftEl) {
+          leftEl.style.transform = "";
+          leftEl.style.opacity = "";
+          leftEl.style.pointerEvents = "";
+        }
+        if (rightEl) {
+          rightEl.style.transform = "";
+          rightEl.style.opacity = "";
+          rightEl.style.pointerEvents = "";
+        }
+        if (bgEl) {
+          bgEl.style.backdropFilter = "";
+          (
+            bgEl.style as CSSStyleDeclaration & {
+              webkitBackdropFilter?: string;
+            }
+          ).webkitBackdropFilter = "";
+        }
+        return;
+      }
+
+      const offset = Math.min(y, barH);
+      const fadeDenom = Math.max(barH * 0.72, 1);
+      const sideOpacity = offset > 0 ? Math.max(0, 1 - offset / fadeDenom) : 1;
+      const sideTransform =
+        offset > 0 ? `translate3d(0, -${offset.toFixed(2)}px, 0)` : "";
+      const sidePointer = nextScrolled ? "none" : "";
+
+      if (leftEl) {
+        leftEl.style.transform = sideTransform;
+        leftEl.style.opacity = offset > 0 ? sideOpacity.toFixed(3) : "";
+        leftEl.style.pointerEvents = sidePointer;
+      }
+      if (rightEl) {
+        rightEl.style.transform = sideTransform;
+        rightEl.style.opacity = offset > 0 ? sideOpacity.toFixed(3) : "";
+        rightEl.style.pointerEvents = sidePointer;
+      }
+
+      if (bgEl) {
+        const blurPx = Math.min(y / 2, 25);
+        const blurValue = blurPx > 0.01 ? `blur(${blurPx.toFixed(2)}px)` : "";
+        bgEl.style.backdropFilter = blurValue;
+        (
+          bgEl.style as CSSStyleDeclaration & {
+            webkitBackdropFilter?: string;
+          }
+        ).webkitBackdropFilter = blurValue;
+      }
     };
 
-    syncScrollState();
-    window.addEventListener("scroll", syncScrollState, { passive: true });
-    window.addEventListener("resize", syncScrollState);
+    const scheduleSync = () => {
+      if (rafId) return;
+      rafId = window.requestAnimationFrame(applyScrollDom);
+    };
 
-    const ctx = gsap.context(() => {
-      ScrollTrigger.create({
-        trigger: document.documentElement,
-        start: "60px top",
-        onEnter: syncScrollState,
-        onLeaveBack: syncScrollState,
-        onUpdate: syncScrollState,
-      });
-    }, headerRef);
+    applyScrollDom();
+    lenis?.on("scroll", scheduleSync);
+    window.addEventListener("scroll", scheduleSync, { passive: true });
+    window.addEventListener("resize", scheduleSync);
+    window.addEventListener("portfolio:page-ready", scheduleSync);
 
     return () => {
-      window.removeEventListener("scroll", syncScrollState);
-      window.removeEventListener("resize", syncScrollState);
-      ctx.revert();
+      if (rafId) window.cancelAnimationFrame(rafId);
+      lenis?.off("scroll", scheduleSync);
+      window.removeEventListener("scroll", scheduleSync);
+      window.removeEventListener("resize", scheduleSync);
+      window.removeEventListener("portfolio:page-ready", scheduleSync);
     };
-  }, [pathname]);
+  }, [lenis, pathname]);
+
+  useEffect(() => {
+    if (!isMenuOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        void closeMenu();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isMenuOpen, closeMenu]);
 
   const navItems = SITE_CONFIG.navLinks;
-
-  const blurPx = scrolled ? Math.min(scrollY / 2, 25) : 0;
-  const sideCollapseStyle: React.CSSProperties =
-    sideOffset > 0
-      ? {
-          transform: `translateY(-${sideOffset}px)`,
-          opacity: Math.max(0, 1 - sideOffset / 64),
-          pointerEvents: scrolled ? "none" : undefined,
-        }
-      : {};
 
   const headerClasses = [
     active ? "active" : "",
@@ -146,7 +210,7 @@ export function Header() {
     <header ref={headerRef} className={headerClasses}>
       <div ref={headerBarRef} className="headerBar">
         <div className="contentWrapper">
-          <div className="left" style={sideCollapseStyle}>
+          <div ref={leftRef} className="left">
             <TransitionLink href="/" className="logo" aria-label={SITE_CONFIG.fullName}>
               <MvPixelLogo
                 animateFrames
@@ -157,17 +221,7 @@ export function Header() {
 
           <div className="center">
             <nav className="menuContainer" aria-label="Main navigation">
-              <div
-                className="background"
-                style={
-                  scrolled
-                    ? {
-                        backdropFilter: `blur(${blurPx}px)`,
-                        WebkitBackdropFilter: `blur(${blurPx}px)`,
-                      }
-                    : undefined
-                }
-              />
+              <div ref={menuBgRef} className="background" />
               <div className="innerContainer">
                 <ul>
                   {navItems.map((item) => {
@@ -191,7 +245,7 @@ export function Header() {
             </nav>
           </div>
 
-          <div className="right" style={sideCollapseStyle}>
+          <div ref={rightRef} className="right">
             {SITE_CONFIG.socials.map((social) => {
               const isExternal = social.href.startsWith("http");
               return (
