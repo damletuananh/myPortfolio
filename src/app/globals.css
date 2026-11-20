@@ -14,7 +14,7 @@
   --color-accent-dark: #E6C24E;
   --color-accent-light: #4B692F;
   --color-ink-soft: #233828;
-  --color-ghost: #233828;
+  --color-ghost: #2E4A35;
   --color-deep: #0F1A12;
   --color-surface-light: #F7F4EA;
   --color-button-accent-ink: #152318;
@@ -289,14 +289,28 @@ html .blocks section:first-child {
   width: 100vw;
   height: 55vw;
   z-index: 4;
-  mix-blend-mode: lighten;
+  mix-blend-mode: normal;
   transition: opacity 0.6s ease-out;
+}
+
+html.notFoundViewportLock .backgroundContainer .errorCanvasWrapper {
+  top: 0;
+  height: 100%;
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 84%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 0%, #000 84%, transparent 100%);
 }
 
 @media (max-width: 580px) {
   .backgroundContainer .errorCanvasWrapper {
     top: 25.862vw;
     height: 64.0625vw;
+  }
+
+  html.notFoundViewportLock .backgroundContainer .errorCanvasWrapper {
+    top: 10dvh;
+    height: 66dvh;
+    -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 84%, transparent 100%);
+    mask-image: linear-gradient(180deg, #000 0%, #000 84%, transparent 100%);
   }
 }
 
@@ -2500,7 +2514,7 @@ footer .copyFooter .right {
 
 .homeHeaderBlock .columns {
   position: relative;
-  min-height: 41.875vw;
+  min-height: 31vw;
   margin-top: 1.25vw;
 }
 
@@ -2517,43 +2531,43 @@ footer .copyFooter .right {
 
 .homeHeaderBlock .lines .lineAnim:nth-child(3) {
   left: 0;
-  top: 30vw;
+  top: 26vw;
 }
 
 .homeHeaderBlock .lines .lineAnim:nth-child(4) {
   left: auto;
   right: 0;
-  top: 30vw;
+  top: 26vw;
 }
 
 .homeHeaderBlock .columns .canvasContainer {
   position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 31.75vw;
-  height: 41.875vw;
+  left: 29vw;
+  top: 0.75vw;
+  transform: none;
+  width: 28vw;
+  height: 28vw;
 }
 
 .homeHeaderBlock .columns .barCode {
   position: absolute;
   left: 0;
-  top: 13.75vw;
+  top: 8.5vw;
   width: 11.875vw;
 }
 
 .homeHeaderBlock .columns .extraInfo {
   position: absolute;
-  left: 16vw;
-  top: 26.125vw;
-  width: 11.875vw;
+  left: 14.5vw;
+  top: 20vw;
+  width: 12vw;
 }
 
 .homeHeaderBlock .columns .contentContainer {
   position: absolute;
-  left: 57.75vw;
-  top: 3.75vw;
-  width: 23.5vw;
+  left: 60.5vw;
+  top: 2.25vw;
+  width: 22.5vw;
 }
 
 .homeHeaderBlock .columns .contentContainer .mTag {
@@ -2562,16 +2576,16 @@ footer .copyFooter .right {
 }
 
 .homeHeaderBlock .columns .contentContainer .drawText {
-  width: 27.5vw;
-  transform: translateX(-7.8125vw);
-  margin-top: -1.5vw;
+  width: 24.5vw;
+  transform: translateX(-1.5vw);
+  margin-top: -1vw;
   margin-bottom: 1.25vw;
 }
 
 .homeHeaderBlock .columns .location {
   position: absolute;
   right: 0;
-  top: 16vw;
+  top: 14vw;
   width: 9.5vw;
   min-width: 8.5vw;
   text-align: right;
@@ -2588,40 +2602,43 @@ footer .copyFooter .right {
   }
 
   .homeHeaderBlock .columns {
-    min-height: 62.037vw;
+    min-height: 39vw;
     margin-top: 1.852vw;
   }
 
   .homeHeaderBlock .columns .canvasContainer {
-    width: 47.036vw;
-    height: 62.037vw;
-    margin-left: -12.037vw;
+    left: 24vw;
+    top: 0;
+    transform: none;
+    margin-left: 0;
+    width: 34vw;
+    height: 34vw;
   }
 
   .homeHeaderBlock .columns .barCode {
-    left: 3.704vw;
+    left: 0;
     top: auto;
-    bottom: 3.704vw;
-    width: 17.593vw;
+    bottom: 2.5vw;
+    width: 18vw;
   }
 
   .homeHeaderBlock .columns .extraInfo {
-    left: 3.704vw;
-    top: 5.556vw;
-    width: 17.593vw;
+    left: 1.8vw;
+    top: 4vw;
+    width: 19vw;
   }
 
   .homeHeaderBlock .columns .contentContainer {
     left: auto;
     right: 0;
-    top: 5.556vw;
-    width: 33.334vw;
+    top: 2vw;
+    width: 34vw;
   }
 
   .homeHeaderBlock .columns .contentContainer .drawText {
-    width: 40.741vw;
-    transform: translateX(-11.574vw);
-    margin-top: -2.222vw;
+    width: 34vw;
+    transform: translateX(0);
+    margin-top: -1vw;
   }
 
   .homeHeaderBlock .columns .location {
@@ -2654,10 +2671,11 @@ footer .copyFooter .right {
   .homeHeaderBlock .columns .canvasContainer {
     position: relative;
     left: auto;
+    top: auto;
     transform: none;
     margin: 0 auto;
     width: 78vw;
-    height: 102.875vw;
+    height: 78vw;
   }
 
   .homeHeaderBlock .columns .barCode {
@@ -2847,14 +2865,12 @@ footer .copyFooter .right {
 .workFeaturedBlock .items .contentContainer.smaller {
   width: 30.5vw;
   padding-left: 6vw;
-  padding-top: 4vw;
+  padding-top: 8vw;
   margin: 0 0.5vw 10vw;
   position: relative;
 }
 
-.workFeaturedBlock .items .contentContainer.smaller .canvasContainer {
-  width: 15vw;
-  height: 15vw;
+.workFeaturedBlock .items .contentContainer.smaller .blockAnimWrapper {
   margin-bottom: 2vw;
 }
 
@@ -2864,15 +2880,19 @@ footer .copyFooter .right {
   top: 0;
 }
 
-.workFeaturedBlock .items .contentContainer.smaller .drawTextContainer {
-  position: absolute;
-  left: 16.625vw;
-  top: 9vw;
-  width: 10.375vw;
+.workFeaturedBlock .items .contentContainer.smaller .mTag {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 1vw;
 }
 
 .workFeaturedBlock .items .contentContainer.smaller .text {
-  padding-left: 3vw;
+  padding-left: 0;
+  margin-top: 0;
+}
+
+.workFeaturedBlock .items .contentContainer.smaller .midNoteAction {
+  margin-top: 1.5vw;
 }
 
 /* Item Intro Tags Grid (.style-1..6) */
@@ -3251,18 +3271,25 @@ html:not(.touch) .titleWrapper a:hover .textTitle:before {
   .workFeaturedBlock .items .contentContainer.smaller {
     width: calc(30% - 2.963vw);
     padding-left: 3vw;
-    padding-top: 3vw;
+    padding-top: 5vw;
     margin: 0 1.481vw 11.111vw;
   }
 
-  .workFeaturedBlock .items .contentContainer.smaller .drawTextContainer {
-    left: 12.5vw;
-    top: 6vw;
-    width: 12.5vw;
+  .workFeaturedBlock .items .contentContainer.smaller .blockAnimWrapper {
+    margin-bottom: 2.5vw;
+  }
+
+  .workFeaturedBlock .items .contentContainer.smaller .mTag {
+    margin-bottom: 1.5vw;
   }
 
   .workFeaturedBlock .items .contentContainer.smaller .text {
     padding-left: 0;
+    margin-top: 0;
+  }
+
+  .workFeaturedBlock .items .contentContainer.smaller .midNoteAction {
+    margin-top: 2vw;
   }
 
   .workFeaturedBlock .itemIntro.style-1 .part,
@@ -6082,41 +6109,123 @@ form .submitField {
    404 Not Found Route — .errorBlock & Z-Sandwich
    ========================================================================== */
 
+html.notFoundViewportLock,
+html.notFoundViewportLock body {
+  overflow: hidden !important;
+  height: 100dvh !important;
+  min-height: 100dvh !important;
+  max-height: 100dvh !important;
+}
+
+html.notFoundViewportLock .backgroundContainer {
+  height: 100dvh !important;
+  min-height: 100dvh !important;
+  max-height: 100dvh !important;
+}
+
+html.notFoundViewportLock .backgroundContainer .backgrounds {
+  height: 100dvh !important;
+  min-height: 100dvh !important;
+}
+
+html.notFoundViewportLock .backgroundContainer .backgrounds .primaryBackground.full {
+  min-height: 100dvh !important;
+}
+
+html.notFoundViewportLock #pageContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100dvh !important;
+  min-height: 100dvh !important;
+  max-height: 100dvh !important;
+  overflow: hidden !important;
+}
+
+html.notFoundViewportLock #pageContainer > main,
+html.notFoundViewportLock #swup {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+html.notFoundViewportLock #pageContainer .blocks.primaryBackgroundFull {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+html.notFoundViewportLock .errorBlock,
 .errorBlock {
   position: relative;
-  min-height: 100vh;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
   padding-top: 0 !important;
   margin: 0 !important;
+  overflow: hidden;
 }
 
 .errorBlock .errorCanvasTriggerHost {
   position: relative;
+  flex: 1 1 auto;
   width: 100%;
-  min-height: 100vh;
+  min-height: 0;
+  display: block;
 }
 
+/* Both #error-canvas-clone-slot and .errorBlock top-align .copyErrorContent from y=0 for 0px Z-sandwich drift */
 .copyErrorContent {
   position: relative;
+  top: 0;
+  left: 0;
   width: 100%;
-  min-height: 100vh;
-  padding: 4.4vw 2.5vw 2vw;
+  height: auto;
+  min-height: 0;
+  display: block;
+  padding: min(2.8vw, 3.8dvh) 1.5vw 0;
+}
+
+.errorCanvasContainer .copyErrorContent {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.copyErrorContent .backgroundTitle {
+  position: relative;
+  width: 100%;
 }
 
 .copyErrorContent .backgroundTitle .errorTitle {
-  font-family: var(--font-display), "Barlow Condensed", sans-serif;
-  font-weight: 900;
+  font-family: var(--font-error-display), "Syne", sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.025em;
   text-transform: uppercase;
-  font-size: 10.75vw;
-  line-height: 0.86;
+  font-size: min(11vw, 19.6dvh);
+  line-height: 0.9;
   color: var(--color-ghost);
   text-align: center;
 }
 
 .copyErrorContent .backgroundTitle .errorTitle .row {
-  display: block;
-  height: 9.25vw;
-  line-height: 9.25vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: min(11.4vw, 15.9dvh);
+  line-height: 0.9;
   overflow: hidden;
+}
+
+.copyErrorContent .backgroundTitle .errorTitle .row > span {
+  display: inline-block;
 }
 
 .copyErrorContent .tags {
@@ -6124,11 +6233,13 @@ form .submitField {
   left: 0;
   width: 100%;
   color: var(--color-canvas);
-  top: 21.8vw;
+  top: 30%;
+  transform: translateY(-50%);
 }
 
 .copyErrorContent .tags.second {
-  top: 40.3vw;
+  top: 70%;
+  transform: translateY(-50%);
 }
 
 .copyErrorContent .tags .plusCross:before,
@@ -6136,11 +6247,26 @@ form .submitField {
   background: var(--color-canvas);
 }
 
-.copyErrorContent .buttonWrapper {
-  position: relative;
-  z-index: 5;
+.copyErrorContent .buttonWrapper,
+.copyErrorContent .backgroundTitle .buttonWrapper {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 6;
+  width: max-content;
   text-align: center;
-  margin-top: 2.2vw;
+  margin-top: 0;
+}
+
+.copyErrorContent .buttonWrapper .button {
+  height: 3.25vw;
+  min-width: 13.25vw;
+  padding: 0 2vw;
+  border-radius: 3.25vw;
+  font-size: 0.9375vw;
+  gap: 0.6875vw;
+  white-space: nowrap;
 }
 
 /* Z-Sandwich visibility rules between #pageContainer (z-5) and #error-canvas-clone-slot (z-2) */
@@ -6171,27 +6297,96 @@ form .submitField {
   pointer-events: none !important;
 }
 
+/* Seamless single-viewport 404 footer */
+html.notFoundViewportLock footer {
+  flex: 0 0 auto;
+  padding: 0 0 min(1.1vw, 1.5dvh);
+  margin-top: 0;
+}
+
+html.notFoundViewportLock footer .copyFooter.smaller {
+  margin-top: 0;
+}
+
+html.notFoundViewportLock footer .copyFooter.smaller .center .drawTextContainer {
+  width: min(10.5vw, 13.5dvh);
+  margin: 0 auto min(0.6vw, 0.8dvh);
+}
+
+html.notFoundViewportLock footer .copyFooter.smaller .center .logo,
+html.notFoundViewportLock footer .copyFooter.smaller .center .MVLogo {
+  width: min(3.2vw, 4.4dvh);
+}
+
 @media (max-width: 1080px) {
-  .copyErrorContent .tags {
-    top: 21.8vw;
+  .copyErrorContent .buttonWrapper .button {
+    height: 4.8vw;
+    min-width: 19.5vw;
+    padding: 0 2.9vw;
+    border-radius: 4.8vw;
+    font-size: 1.38vw;
+    gap: 0.95vw;
+  }
+}
+
+@media (max-width: 768px) and (orientation: portrait), (max-width: 580px) {
+  .copyErrorContent {
+    padding: min(17vw, 8.2dvh) 2vw 0;
   }
 
-  .copyErrorContent .tags.second {
-    top: 40.3vw;
+  .copyErrorContent .backgroundTitle .errorTitle {
+    font-family: var(--font-display), "Barlow Condensed", sans-serif;
+    font-weight: 900;
+    letter-spacing: -0.015em;
+    font-size: min(26.8vw, 13.4dvh);
+    line-height: 0.9;
+  }
+
+  .copyErrorContent .backgroundTitle .errorTitle .row {
+    height: min(27vw, 13.4dvh);
+    line-height: 0.9;
+  }
+
+  .copyErrorContent .backgroundTitle .errorTitle .row > span {
+    transform: none;
   }
 }
 
 @media (max-width: 580px) {
-  .copyErrorContent {
-    padding-top: 22.414vw;
+  .copyErrorContent .buttonWrapper .button {
+    height: 9.2vw;
+    min-width: 40vw;
+    padding: 0 5.5vw;
+    border-radius: 9.2vw;
+    font-size: 3.6vw;
+    gap: 1.8vw;
   }
 
-  .copyErrorContent .tags {
-    top: 40vw;
+  html.notFoundViewportLock footer {
+    padding: 0 0 min(3vw, 1.8dvh);
   }
 
-  .copyErrorContent .tags.second {
-    top: 58.5vw;
+  html.notFoundViewportLock footer .copyFooter.smaller {
+    margin-top: 0;
+  }
+
+  html.notFoundViewportLock footer .copyFooter.smaller .left,
+  html.notFoundViewportLock footer .copyFooter.smaller .center {
+    margin-bottom: min(2vw, 1.1dvh);
+  }
+
+  html.notFoundViewportLock footer .copyFooter.smaller .right {
+    margin-bottom: 0;
+  }
+
+  html.notFoundViewportLock footer .copyFooter.smaller .center .drawTextContainer {
+    width: min(30vw, 15dvh);
+    margin-bottom: min(1.6vw, 1dvh);
+  }
+
+  html.notFoundViewportLock footer .copyFooter.smaller .center .logo,
+  html.notFoundViewportLock footer .copyFooter.smaller .center .MVLogo {
+    width: min(11vw, 5.2dvh);
   }
 }
 

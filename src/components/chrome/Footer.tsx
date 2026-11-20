@@ -66,12 +66,16 @@ export function Footer() {
       }
     };
 
-    // Reset .inview on route change only if footer is off-screen below fold
-    const initialRect = footer.getBoundingClientRect();
-    if (initialRect.top >= window.innerHeight * 0.96) {
-      footer.classList.remove("inview");
-    } else {
+    if (isErrorPage) {
       markInview();
+    } else {
+      // Reset .inview on route change only if footer is off-screen below fold
+      const initialRect = footer.getBoundingClientRect();
+      if (initialRect.top >= window.innerHeight * 0.96) {
+        footer.classList.remove("inview");
+      } else {
+        markInview();
+      }
     }
 
     const ctx = gsap.context(() => {
@@ -97,13 +101,15 @@ export function Footer() {
       window.removeEventListener("portfolio:page-ready", onPageReady);
       ctx.revert();
     };
-  }, [pathname]);
+  }, [pathname, isErrorPage]);
 
   return (
     <footer ref={footerRef} className="setPrimaryBackground">
-      <div className="contentWrapper">
-        <div className="divider" />
-      </div>
+      {!isErrorPage ? (
+        <div className="contentWrapper">
+          <div className="divider" />
+        </div>
+      ) : null}
 
       {!isErrorPage ? (
         <div className="topFooter">
@@ -213,15 +219,14 @@ export function Footer() {
           </div>
 
           <div className="center">
-            {!isErrorPage ? (
-              <DrawSvg
-                triggerOnScroll
-                delay={0.1}
-                className="drawTextContainer"
-              >
-                <SignatureDrawSvg variant="footer" />
-              </DrawSvg>
-            ) : null}
+            <DrawSvg
+              triggerOnScroll={!isErrorPage}
+              active={isErrorPage}
+              delay={isErrorPage ? 0.25 : 0.1}
+              className="drawTextContainer"
+            >
+              <SignatureDrawSvg variant="footer" />
+            </DrawSvg>
             <div className="logo">
               <MvPixelLogo secondary animateFrames />
             </div>

@@ -2,6 +2,11 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
+import {
+  EnvelopeSimple,
+  GithubLogo,
+  LinkedinLogo,
+} from "@phosphor-icons/react/dist/ssr";
 import { SITE_CONFIG, type SocialLink } from "@/data/portfolio";
 import { MvPixelLogo, SignatureDrawSvg } from "@/components/svg/BrandGraphics";
 import {
@@ -12,39 +17,15 @@ import { useThemeBackground } from "@/components/providers/ThemeBackgroundProvid
 import { useLenisContext } from "@/components/providers/LenisProvider";
 import { DrawSvg } from "@/components/motion/DrawSvg";
 
+const SOCIAL_GLYPHS = {
+  github: GithubLogo,
+  linkedin: LinkedinLogo,
+  email: EnvelopeSimple,
+} as const;
+
 export function SocialGlyph({ platform }: { platform: SocialLink["platform"] }) {
-  if (platform === "github") {
-    return (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path
-          fill="currentColor"
-          d="M12 2C6.477 2 2 6.484 2 12.017C2 16.442 4.865 20.197 8.839 21.521C9.339 21.613 9.521 21.304 9.521 21.038C9.521 20.801 9.513 20.17 9.508 19.335C6.726 19.94 6.139 17.992 6.139 17.992C5.685 16.834 5.029 16.526 5.029 16.526C4.121 15.906 5.098 15.918 5.098 15.918C6.101 15.988 6.628 16.95 6.628 16.95C7.52 18.48 8.969 18.038 9.538 17.782C9.63 17.135 9.888 16.694 10.174 16.444C7.954 16.191 5.619 15.331 5.619 11.493C5.619 10.4 6.009 9.505 6.648 8.805C6.545 8.552 6.202 7.533 6.746 6.155C6.746 6.155 7.586 5.885 9.496 7.181C10.294 6.959 11.15 6.848 12 6.844C12.85 6.848 13.705 6.959 14.504 7.181C16.413 5.885 17.251 6.155 17.251 6.155C17.797 7.534 17.453 8.553 17.351 8.805C17.991 9.505 18.379 10.4 18.379 11.493C18.379 15.341 16.04 16.188 13.813 16.436C14.172 16.745 14.491 17.356 14.491 18.291C14.491 19.629 14.479 20.71 14.479 21.038C14.479 21.306 14.659 21.618 15.167 21.52C19.138 20.193 22 16.44 22 12.017C22 6.484 17.522 2 12 2Z"
-        />
-      </svg>
-    );
-  }
-
-  if (platform === "linkedin") {
-    return (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path
-          fill="currentColor"
-          d="M5.2 3.2C3.87 3.2 2.8 4.27 2.8 5.6C2.8 6.93 3.87 8 5.2 8C6.53 8 7.6 6.93 7.6 5.6C7.6 4.27 6.53 3.2 5.2 3.2ZM3.1 9.6H7.3V21H3.1V9.6ZM9.9 9.6H13.9V11.16H13.96C14.52 10.1 15.88 8.98 17.92 8.98C22.14 8.98 22.92 11.76 22.92 15.38V21H18.72V16.02C18.72 14.83 18.7 13.3 17.07 13.3C15.42 13.3 15.17 14.59 15.17 15.94V21H10.97V9.6H9.9Z"
-        />
-      </svg>
-    );
-  }
-
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path
-        fillRule="evenodd"
-        clipRule="evenodd"
-        fill="currentColor"
-        d="M4 4.5H20C21.1046 4.5 22 5.39543 22 6.5V17.5C22 18.6046 21.1046 19.5 20 19.5H4C2.89543 19.5 2 18.6046 2 17.5V6.5C2 5.39543 2.89543 4.5 4 4.5ZM4.6 6.3L12 11.25L19.4 6.3H4.6ZM3.8 7.85V17.7H20.2V7.85L12 13.3L3.8 7.85Z"
-      />
-    </svg>
-  );
+  const Icon = SOCIAL_GLYPHS[platform] ?? EnvelopeSimple;
+  return <Icon size="1em" weight="bold" aria-hidden="true" />;
 }
 
 function isNavActive(pathname: string, href: string): boolean {

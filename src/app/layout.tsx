@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Barlow_Condensed, DM_Sans } from "next/font/google";
+import { Barlow_Condensed, DM_Sans, Syne } from "next/font/google";
 import "./globals.css";
 import AppShell from "@/components/providers/AppShell";
 
@@ -16,6 +16,13 @@ const sansFont = DM_Sans({
   weight: ["400", "500", "700"],
   style: ["normal", "italic"],
   variable: "--font-sans",
+  display: "swap",
+});
+
+const errorDisplayFont = Syne({
+  subsets: ["latin"],
+  weight: "800",
+  variable: "--font-error-display",
   display: "swap",
 });
 
@@ -42,7 +49,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${displayFont.variable} ${sansFont.variable}`}
+      className={`${displayFont.variable} ${sansFont.variable} ${errorDisplayFont.variable}`}
     >
       <body>
         <AppShell>{children}</AppShell>

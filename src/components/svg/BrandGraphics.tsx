@@ -1,6 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import {
+  Cube,
+  Globe,
+  PlayCircle,
+  Plus,
+  Sparkle,
+} from "@phosphor-icons/react/dist/ssr";
 
 /**
  * 4-frame strictly 1-color monochrome Vietnamese grass dog ("Cún") pixel emblem (`viewBox="0 0 189 117"`).
@@ -316,8 +323,15 @@ export function CertificationEmblemSvg({ className = "" }: { className?: string 
   );
 }
 
+const CLIENT_CATEGORY_ICONS = {
+  web: Globe,
+  "3d": Cube,
+  motion: PlayCircle,
+  brand: Sparkle,
+} as const;
+
 /**
- * Crisp 24x24 category glyph for Milestones & Credentials rows:
+ * Crisp category glyph for Milestones & Credentials rows:
  * - "web": Frontend, WebGL & UX Craft
  * - "3d": System Architecture, Data & Applied AI
  * - "motion": Interactive Builds & STEM Outreach
@@ -330,62 +344,14 @@ export function ClientCategoryIcon({
   category: "web" | "3d" | "motion" | "brand";
   className?: string;
 }) {
+  const Icon = CLIENT_CATEGORY_ICONS[category] ?? Sparkle;
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
+    <Icon
       className={className}
+      size="100%"
+      weight="bold"
       aria-hidden="true"
-    >
-      {category === "web" && (
-        <>
-          <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth={1.6} />
-          <ellipse cx="12" cy="12" rx="4.2" ry="9" stroke="currentColor" strokeWidth={1.6} />
-          <path d="M3.5 12H20.5" stroke="currentColor" strokeWidth={1.6} />
-        </>
-      )}
-      {category === "3d" && (
-        <>
-          <polygon
-            points="12,2.5 20.5,7.2 20.5,16.8 12,21.5 3.5,16.8 3.5,7.2"
-            stroke="currentColor"
-            strokeWidth={1.6}
-            strokeLinejoin="round"
-          />
-          <path
-            d="M3.5 7.2L12 12L20.5 7.2M12 12V21.5"
-            stroke="currentColor"
-            strokeWidth={1.6}
-            strokeLinejoin="round"
-          />
-        </>
-      )}
-      {category === "motion" && (
-        <>
-          <rect
-            x="3"
-            y="5"
-            width="18"
-            height="14"
-            rx="3"
-            stroke="currentColor"
-            strokeWidth={1.6}
-          />
-          <polygon points="10,9 16,12 10,15" fill="currentColor" />
-        </>
-      )}
-      {category === "brand" && (
-        <>
-          <path
-            d="M12 2.5L14.6 9.4L21.5 12L14.6 14.6L12 21.5L9.4 14.6L2.5 12L9.4 9.4L12 2.5Z"
-            stroke="currentColor"
-            strokeWidth={1.6}
-            strokeLinejoin="round"
-          />
-        </>
-      )}
-    </svg>
+    />
   );
 }
 
@@ -404,9 +370,7 @@ export function PlusCross({
       className={`plusCross ${rotating ? "rotating" : ""} ${className}`.trim()}
       aria-hidden="true"
     >
-      <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M8 1V15M1 8H15" stroke="currentColor" strokeWidth={2} />
-      </svg>
+      <Plus size="100%" weight="bold" aria-hidden="true" />
     </span>
   );
 }

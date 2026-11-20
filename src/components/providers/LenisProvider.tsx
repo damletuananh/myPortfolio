@@ -89,14 +89,13 @@ export function LenisProvider({ children }: { children: React.ReactNode }) {
     gsap.registerPlugin(ScrollTrigger);
 
     const instance = new Lenis({
-      duration: 1.5,
-      easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      lerp: 0.08,
       orientation: "vertical",
       gestureOrientation: "vertical",
       smoothWheel: true,
-      wheelMultiplier: 2,
+      wheelMultiplier: 0.95,
       syncTouch: false,
-      touchMultiplier: 5,
+      touchMultiplier: 1.5,
     });
 
     let disposed = false;
@@ -110,7 +109,7 @@ export function LenisProvider({ children }: { children: React.ReactNode }) {
     const tick = (time: number) => {
       instance.raf(time * 1000);
     };
-    gsap.ticker.add(tick);
+    gsap.ticker.add(tick, false, true);
     gsap.ticker.lagSmoothing(0);
 
     // Cold load on `/` locks scroll briefly during the hero typography choreography
@@ -123,7 +122,7 @@ export function LenisProvider({ children }: { children: React.ReactNode }) {
         applyScrollLockDom(false);
         instance.start();
         setIsScrollLocked(false);
-      }, 2600);
+      }, 900);
     }
 
     const initRaf = window.requestAnimationFrame(() => {

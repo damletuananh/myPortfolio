@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import { Quotes } from "@phosphor-icons/react/dist/ssr";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { TransitionLink } from "@/components/providers/TransitionProvider";
@@ -217,12 +218,7 @@ export function ToolTipIcon({
       className={`toolTipIcon${small ? " small" : ""}${open ? " open" : ""}${className ? ` ${className}` : ""}`}
     >
       <span className="icon-quote" aria-hidden="true">
-        <svg viewBox="0 0 16 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path
-            d="M6.4 1.2C3.8 2.6 2.3 5 2 8.2H6.5V13H0.8V8.4C0.8 4.4 2.7 1.7 5.7 0L6.4 1.2ZM14.9 1.2C12.3 2.6 10.8 5 10.5 8.2H15V13H9.3V8.4C9.3 4.4 11.2 1.7 14.2 0L14.9 1.2Z"
-            fill="currentColor"
-          />
-        </svg>
+        <Quotes size="100%" weight="fill" aria-hidden="true" />
       </span>
       <span
         className={`toolTipWrapper${light ? " light" : ""}`}

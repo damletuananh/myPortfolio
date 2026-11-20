@@ -22,7 +22,7 @@ export function Marquee({
   items,
   children,
   direction = "left",
-  speed = 45,
+  speed = 72,
   scrollSpeed,
   className = "",
   separator,
@@ -79,15 +79,15 @@ export function Marquee({
       let duration =
         firstWidth > 0 ? speed * (firstWidth / viewportWidth) : speed * 0.5;
       if (viewportWidth <= 580) {
-        duration *= 0.25;
+        duration *= 0.45;
       } else if (viewportWidth <= 1080) {
-        duration *= 0.5;
+        duration *= 0.72;
       }
       duration = Math.max(2, duration);
 
       const baseSign = direction === "right" ? -1 : 1;
       const boostGain = 1.0 + Math.min(Math.max(scrollSpeed ?? 0, 0), 2) * 0.2;
-      const MAX_BOOST = 6.5;
+      const MAX_BOOST = 2.8;
 
       gsap.set(scrollEl, { x: 0 });
 
@@ -104,27 +104,31 @@ export function Marquee({
       loopTween.timeScale(baseSign);
 
       let isInView = false;
+      let scrollDirMult: 1 | -1 = 1;
       let targetBoost = 0;
-      let currentBoost = 0;
-      let lastScale = baseSign;
+      let currentScale = baseSign * scrollDirMult;
+      let lastScale = currentScale;
 
       const syncInView = (visible: boolean) => {
+        const restingScale = baseSign * scrollDirMult;
         if (visible) {
           isInView = true;
           wrapper.classList.add("inview");
-          const nextScale = baseSign * (1 + currentBoost);
-          if (nextScale !== lastScale) {
-            loopTween.timeScale(nextScale);
-            lastScale = nextScale;
+          if (!Number.isFinite(currentScale) || currentScale === 0) {
+            currentScale = restingScale;
+          }
+          if (currentScale !== lastScale) {
+            loopTween.timeScale(currentScale);
+            lastScale = currentScale;
           }
           loopTween.resume();
         } else {
           isInView = false;
           targetBoost = 0;
-          currentBoost = 0;
-          if (lastScale !== baseSign) {
-            loopTween.timeScale(baseSign);
-            lastScale = baseSign;
+          currentScale = restingScale;
+          if (lastScale !== restingScale) {
+            loopTween.timeScale(restingScale);
+            lastScale = restingScale;
           }
           loopTween.pause();
         }
@@ -146,12 +150,16 @@ export function Marquee({
         onRefresh: () => syncInView(checkIsInView()),
         onUpdate: (self) => {
           if (!isInView) return;
-          const rawVelocity = Math.abs(self.getVelocity());
-          const v = Number.isFinite(rawVelocity) ? rawVelocity : 0;
+          const rawVel = self.getVelocity();
+          if (!Number.isFinite(rawVel)) return;
+          if (Math.abs(rawVel) > 25) {
+            scrollDirMult = rawVel >= 0 ? 1 : -1;
+          }
+          const v = Math.abs(rawVel);
           if (v > 0) {
             targetBoost = Math.max(
               targetBoost,
-              Math.min(MAX_BOOST, (v / 260) * boostGain)
+              Math.min(MAX_BOOST, (v / 520) * boostGain)
             );
           }
         },
@@ -161,6 +169,12 @@ export function Marquee({
 
       const handleWheel = (event: WheelEvent) => {
         if (!isInView) return;
+        if (
+          Math.abs(event.deltaY) >= Math.abs(event.deltaX) &&
+          Math.abs(event.deltaY) >= 4
+        ) {
+          scrollDirMult = event.deltaY >= 0 ? 1 : -1;
+        }
         const wheelMag = Math.min(
           Math.abs(event.deltaY) + Math.abs(event.deltaX),
           360
@@ -168,7 +182,7 @@ export function Marquee({
         if (wheelMag > 0) {
           targetBoost = Math.max(
             targetBoost,
-            Math.min(MAX_BOOST, (wheelMag / 75) * boostGain)
+            Math.min(MAX_BOOST, (wheelMag / 160) * boostGain)
           );
         }
       };
@@ -178,7 +192,7 @@ export function Marquee({
       const onTick = (_time: number, deltaRatioMs: number) => {
         if (!isInView) return;
 
-        if (baseSign < 0 && loopTween.iteration() < 500) {
+        if (currentScale < 0 && loopTween.iteration() < 500) {
           loopTween.iteration(loopTween.iteration() + 10000, true);
         }
 
@@ -187,23 +201,25 @@ export function Marquee({
           0.05
         );
 
-        targetBoost *= Math.exp(-5.0 * dt);
+        targetBoost *= Math.exp(-4.2 * dt);
         if (targetBoost < 0.001) {
           targetBoost = 0;
         }
 
-        const rate = targetBoost > currentBoost ? 16 : 3.8;
-        const alpha = 1 - Math.exp(-rate * dt);
-        currentBoost += (targetBoost - currentBoost) * alpha;
+        const restingScale = baseSign * scrollDirMult;
+        const targetScale = baseSign * scrollDirMult * (1 + targetBoost);
 
-        if (currentBoost < 0.004 && targetBoost === 0) {
-          currentBoost = 0;
+        const rate = Math.abs(targetScale) > Math.abs(currentScale) ? 10 : 3.2;
+        const alpha = 1 - Math.exp(-rate * dt);
+        currentScale += (targetScale - currentScale) * alpha;
+
+        if (targetBoost === 0 && Math.abs(currentScale - restingScale) < 0.004) {
+          currentScale = restingScale;
         }
 
-        const nextScale = baseSign * (1 + currentBoost);
-        if (nextScale !== lastScale) {
-          loopTween.timeScale(nextScale);
-          lastScale = nextScale;
+        if (currentScale !== lastScale) {
+          loopTween.timeScale(currentScale);
+          lastScale = currentScale;
         }
       };
 

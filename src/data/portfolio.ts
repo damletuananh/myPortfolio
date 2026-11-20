@@ -32,7 +32,8 @@ export interface SiteConfig {
   heroBio: string[];
   manifestoTitle: string;
   manifestoBody: string;
-  birdJokeText: string;
+  midNoteTitle: string;
+  midNoteBody: string;
   locationLabel: string;
   coordinates: string;
   coordinateLines: [string, string];
@@ -211,8 +212,9 @@ export const SITE_CONFIG: SiteConfig = {
   manifestoTitle: "[Craft & System Thinking]",
   manifestoBody:
     "Anyone can force a screen to render by Friday if they ignore the wreckage behind it. I am practicing the harder discipline: drawing clean boundaries before the first line is written, testing every AI assumption line by line, and leaving systems calm enough for the next engineer to inhabit.",
-  birdJokeText:
-    "(Yes, that’s Cún—my home nickname, 2006 Year of the Dog emblem, and reminder to stay sharp yet kind.)",
+  midNoteTitle: "[Built to Endure]",
+  midNoteBody:
+    "Quiet systems hold up under pressure—clear domain boundaries, strict verification, and interfaces that stay calm after shipping.",
   locationLabel: "Ho Chi Minh City",
   coordinates: "/ 10.7770° N // 106.6954° E",
   coordinateLines: ["/ 10.7770° N", "// 106.6954° E"],
@@ -264,17 +266,9 @@ export const SITE_CONFIG: SiteConfig = {
 };
 
 export const HERO_MEDIA: MediaAsset = {
-  imageSrc: "/media/mascot/mascot-hero.jpg",
-  respImageSrc: "/media/mascot/mascot-hero-resp.jpg",
-  alt: "Editorial golden-tan Vietnamese grass dog (Cún) portrait anchoring Dam Le Tuan Anh's portfolio",
+  imageSrc: "/media/profile/tuan-anh-portrait.jpg",
+  alt: "Studio portrait of Dam Le Tuan Anh, Software Engineering student at FPT University Ho Chi Minh City",
 };
-
-export const MID_BIRD_MEDIA: MediaAsset = {
-  imageSrc: "/media/mascot/mascot-mid.jpg",
-  alt: "Alert golden-tan Vietnamese grass dog (Cún) mascot separating featured engineering case studies",
-};
-
-export const MID_MASCOT_MEDIA = MID_BIRD_MEDIA;
 
 export const PROFILE_PORTRAIT_MEDIA: MediaAsset = {
   imageSrc: "/media/profile/tuan-anh-portrait.jpg",
@@ -298,8 +292,8 @@ export const FOOTER_BIRD_MEDIA: MediaAsset = {
 export const FOOTER_MASCOT_MEDIA = FOOTER_BIRD_MEDIA;
 
 export const NOT_FOUND_BIRD_MEDIA: MediaAsset = {
-  imageSrc: "/media/mascot/mascot-notfound.jpg",
-  alt: "Wayfinding golden-tan Vietnamese grass dog (Cún) artwork on the page-not-found screen",
+  imageSrc: "/media/mascot/mascot-notfound.png",
+  alt: "Museum darkfield macro photograph of an isolated canine skull specimen on pure black background",
 };
 
 export const NOT_FOUND_MASCOT_MEDIA = NOT_FOUND_BIRD_MEDIA;
@@ -425,29 +419,29 @@ export const PROJECTS: ProjectItem[] = [
     tags: ["Next.js 16", "FastAPI", "Playwright", "Multi-Agent"],
     year: "2025",
     summary:
-      "Opening an unbroken year of three SEAL Hackathons: a Top 3 Agile QA auditor grading Playwright captures with schema-locked multi-agent RAG, followed by internal-doc RAG and WebSocket IoT factory safety agents.",
+      "Opening a three-season Software Engineering Agile League (SEAL) streak at FPT University HCMC: Team UNDERATE's 3rd Place (Top 3 Finalist) Agile QA auditor (01–02/11/2025), followed by internal-doc RAG (11–12/04/2026) and WebSocket IoT factory safety agents (15–16/08/2026).",
     featured: true,
     layoutStyle: 2,
     primaryMedia: {
       imageSrc: "/media/projects/project-02.jpg",
-      alt: "Three progressive frosted calibration glass slabs in landscape, square, and tall portrait proportions on stone with amber refractions, a multi-viewport scale metaphor for SEAL Underrate",
+      alt: "Team Underrate pitching on stage with Dam Le Tuan Anh presenting at the FPT University SEAL Hackathon",
     },
     caseStudyBlocks: [
       {
         type: "fullscreen169",
         media: {
           imageSrc: "/media/projects/wide-02.jpg",
-          alt: "Suspended brass plumb line hanging in crisp sunlight above aligned clear optical prisms and smoked optical glass frames on a stone ledge, symbolizing SEAL Underrate multi-agent QA verification",
+          alt: "Packed student atrium and judges watching presentations at the FPT University SEAL Hackathon",
         },
         caption:
-          "Three parallel AI reviewers inspecting Playwright viewport captures behind strict JSON schemas.",
+          "Three consecutive FPT University SEAL Hackathons moving from Agile QA to internal RAG and live IoT operations.",
       },
       {
         type: "text",
         heading: "Three Seasons, One Relentless Year",
         paragraphs: [
-          "FPT University moves on a three-semester-per-year calendar—Fall, Spring, Summer—leaving scant breath between sprints. In Fall 2025 (09/2025 – 12/2025), our team opened an uninterrupted three-season SEAL Hackathon streak with SEAL Underrate, earning 3rd Place (Top 3) in the Agile QA Track. Leading ideation, architecture, and the Next.js 16 frontend, I wanted to cure LLM design audits of their worst habit: inventing CSS breaks out of thin air.",
-          "Instead of letting chat models guess from raw markup, Playwright captures exact 1920×1080, 768×1024, and 375×667 screenshots and DOM measurements first. Three parallel agents (OpenRouter / Claude 3.5 Sonnet) then cross-check visual proof against a RAG design rubric and write deterministic JSON payloads into PostgreSQL.",
+          "Hosted by the Software Engineering Department and Student Affairs Office (CTSV) at FPT University HCMC across its three-semester-per-year calendar, the Software Engineering Agile League (SEAL) tests builders every Fall, Spring, and Summer. On 01–02/11/2025 (Fall 2025, \"AI Agents for Software Innovation\"), Team UNDERATE opened our three-season streak with SEAL Underrate—winning 3rd Place (Top 3 Finalist) in the Agile QA track while I led ideation, architecture, and the Next.js 16 frontend.",
+          "To cure LLM design audits of inventing CSS breaks from raw markup, Playwright captures exact 1920×1080, 768×1024, and 375×667 screenshots and DOM measurements first. Three parallel agents (OpenRouter / Claude 3.5 Sonnet) then cross-check visual proof against a RAG design rubric and write deterministic JSON payloads into PostgreSQL.",
         ],
       },
       {
@@ -456,15 +450,15 @@ export const PROJECTS: ProjectItem[] = [
         screens: [
           {
             imageSrc: "/media/projects/mobile-01-a.jpg",
-            alt: "Dark indigo optical glass triptych study I: tall transparent monolith on slate pierced by a horizontal amber calibration beam, representing SEAL Underrate 1920x1080 desktop inspection",
+            alt: "Official Fall 2025 SEAL Hackathon Third Prize award graphic featuring Team Underrate",
           },
           {
             imageSrc: "/media/projects/mobile-01-b.jpg",
-            alt: "Dark indigo optical glass triptych study II: matte-black mechanical aperture housing a faceted amber prism over slate ray tracings, representing SEAL Underrate 768x1024 tablet inspection",
+            alt: "Spring 2026 SEAL Hackathon event poster focused on Mastering Domain-Specific AI RAG Systems",
           },
           {
             imageSrc: "/media/projects/mobile-01-c.jpg",
-            alt: "Dark indigo optical glass triptych study III: twin stacked beveled smoked-glass plates catching warm amber edge light on a dark pedestal, representing SEAL Underrate 375x667 mobile inspection",
+            alt: "Judge and speaker addressing competitors on stage during Summer 2026 SEAL Hackathon for AI-Driven Smart Operations",
           },
         ],
       },
@@ -472,13 +466,13 @@ export const PROJECTS: ProjectItem[] = [
         type: "imageText",
         media: {
           imageSrc: "/media/projects/project-02-detail.jpg",
-          alt: "Precision brushed brass IoT sensor couplings and dark matte-indigo clamps linked by glowing golden fiber optics on slate, reflecting SEAL Hackathon internal RAG and factory safety telemetry",
+          alt: "Teammates collaborating around a laptop during a SEAL Hackathon build sprint at FPT University",
         },
         align: "right",
         heading: "From QA Podium to Internal RAG & Factory IoT",
         paragraphs: [
-          "Fall's Top 3 podium was only the opening chapter. In Spring 2026 (01/2026 – 04/2026), we shifted to an employee-only AI assistant strictly chained to verified internal company documents via RAG—sharpening retrieval precision and zero-leakage guardrails. In Summer 2026 (05/2026 – 08/2026), we carried AI agents off the screen into physical factory hardware: reading live temperature, humidity, and smoke telemetry over real-time WebSockets so an autonomous agent could adjust IoT actuator loads before hazards escalated.",
-          "Neither Spring nor Summer returned a stage trophy—yet those two uncelebrated builds forged real mastery of RAG boundaries and agentic control that immediately crystallized in ChiChan.",
+          "Fall's podium was only the opening chapter. On 11–12/04/2026 (Spring 2026, \"Mastering Domain-Specific AI RAG Systems\"), we built an internal employee AI chatbot strictly constrained to verified company documents via RAG—sharpening retrieval precision and zero-leakage guardrails. On 15–16/08/2026 (Summer 2026, \"AI-Driven Smart Operations: Turning Real-Time IoT Data into Intelligent Actions\"), we engineered factory equipment safety AI agents streaming real-time WebSocket telemetry (temperature, humidity, and smoke) to modulate IoT actuators before hazards escalated.",
+          "Though neither Spring nor Summer brought home a stage trophy, completing all three consecutive seasons was officially honored by the organizers at the Summer 2026 finale—and forged the RAG boundaries and agentic control that immediately crystallized in ChiChan.",
         ],
       },
       {
@@ -486,9 +480,14 @@ export const PROJECTS: ProjectItem[] = [
         heading: "Hackathon Recognition",
         awards: [
           {
-            title: "3rd Place (Top 3) · Agile QA Track",
-            organization: "SEAL Hackathon (Fall 2025)",
-            year: "2025",
+            title: "3rd Place (Top 3 Finalist) · Agile QA Track (Team UNDERATE)",
+            organization: "Software Engineering Agile League (SEAL) · FPTU HCMC SE Dept & CTSV",
+            year: "01–02/11/2025",
+          },
+          {
+            title: "Three-Season Consecutive Competitor Honor (Fall '25 · Spring '26 · Summer '26)",
+            organization: "Software Engineering Agile League (SEAL) · FPT University HCMC",
+            year: "15–16/08/2026",
           },
         ],
       },
@@ -945,7 +944,7 @@ export const ABOUT_CONTENT: AboutContentData = {
     "At home my parents called me \"Cún,\" and both family and teachers knew the same steady traits: respectful, polite, quick-witted, and eager to learn. At fifteen, entering Duong Van Thi High School's third cohort in Thu Duc City as post-COVID classes reopened in early 2022, that alertness kept me pulling apart open HTML, CSS, JavaScript, ReactJS, Tailwind CSS, AngularJS, and Bootstrap templates before formal theory—rebuilding designs just to watch how interfaces breathed. By June 2022, at sixteen, winning 2nd Prize at the Thu Duc City Youth Informatics Olympiad anchored that visual wonder in real algorithmic footing.",
     "Seeing promise in a small circle of us, our Informatics teacher trusted us to co-found the school's very first STEM/STEAM club (01/2022 – 05/2023), rallying teammates into citywide robotics and autonomous-vehicle contests to put a young school on the map. Then Grade 12 brought the hardest trade-off of my teens. Coding was what I loved most, yet Informatics did not count toward core university entrance admissions at the time—so I stepped off the Informatics roster to join the Chemistry Olympiad team, choosing the long horizon over immediate attachment.",
     "Arriving at FPT University Ho Chi Minh City in September 2024—on an intense three-semester-per-year calendar and inside its twelve-year-old F-Code technical club—dropped me straight into the first wave of ChatGPT and Cursor IDE. Rather than surrendering thought to autocomplete, I built a habit of letting the AI agent attempt even tiny bugs I already knew how to fix, tracing its reasoning step by step until I caught its smallest blind spots and turned prompt discipline into reliable workflows often costing $0.",
-    "That discipline carried me through an unbroken year of three consecutive SEAL Hackathons—Fall, Spring, and Summer. Fall 2025 won Top 3 (3rd Place) in Agile QA with SEAL Underrate (Next.js, Playwright, and three schema-locked agents). Spring 2026 narrowed focus to an employee RAG assistant strictly bounded to verified company documents; Summer 2026 carried AI agents over real-time WebSockets into factory-floor temperature, humidity, and smoke sensors to modulate IoT equipment load. Between them, SmartRoute—forecasting 9,841 Ho Chi Minh City segments at 97.78% XGBoost accuracy and 60 FPS—took 3rd Place at WebDev Adventure (05/2026).",
+    "That discipline carried me through three consecutive seasons of the Software Engineering Agile League (SEAL), hosted by the Software Engineering Department and Student Affairs Office (CTSV) at FPT University HCMC. On 01–02/11/2025 (Fall 2025, \"AI Agents for Software Innovation\"), Team UNDERATE won 3rd Place (Top 3 Finalist) in Agile QA with SEAL Underrate (Next.js, Playwright, and three schema-locked agents). Spring 2026 (11–12/04/2026, \"Mastering Domain-Specific AI RAG Systems\") narrowed focus to an internal employee AI chatbot strictly constrained to verified company documents via RAG; Summer 2026 (15–16/08/2026, \"AI-Driven Smart Operations: Turning Real-Time IoT Data into Intelligent Actions\") streamed real-time WebSocket telemetry (temperature, humidity, and smoke) into factory equipment safety AI agents to modulate IoT actuators before hazards escalated, earning three-season SEAL completion honors. Between them, SmartRoute—forecasting 9,841 Ho Chi Minh City segments at 97.78% XGBoost accuracy and 60 FPS—took 3rd Place at WebDev Adventure (05/2026).",
     "Those two unrewarded hackathons forged what mattered next: mentoring Giong Ong To High School students on ChiChan (01/2026 – 10/2026), grounding WHO/CDC guidance in 768-dim pgvector RAG while shaping Gemini SSE agents into empathetic personas teenagers trust. Every Monday and Wednesday of Bright Summer (08/2026) at Binh Tho Center (26a Street 13, Thu Duc), an F-Code × SiTiGroup interactive AI playroom brought that care to children. That affectionate, warmhearted instinct to help wherever needed holds steady away from screens too—across lunar full-moon temple kitchens (01/2022 – Present) and mobile militia holiday patrols (04/2025 – Present).",
     "Today, backed by seven completed Coursera Specializations across Software Engineering (HKUST), UX Research and Web Design (Michigan), Java OOP (Duke & UC San Diego), Generative AI (IBM), and Academic Inquiry (Sydney), I am making my clearest pivot yet: walking away from the habit of shipping a working screen at any price while leaving a chaotic battlefield behind the scenes—and committing instead to clean boundaries, honest abstractions, and durable systems a real team can trust.",
   ],
@@ -1042,19 +1041,20 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
   },
   {
     id: "tl-seal-fall",
-    period: "09/2025 – 12/2025",
-    title: "SEAL Hackathon Fall · Agile QA",
+    period: "01–02/11/2025",
+    title: "SEAL Fall 2025 · Agile QA (Team UNDERATE)",
     context:
-      "Launched a three-term SEAL streak by leading ideation, architecture, and Next.js frontend for SEAL Underrate—pairing Playwright captures with three schema-locked AI reviewers.",
+      "Opened a three-season Software Engineering Agile League (SEAL) streak hosted by FPTU HCMC's SE Dept & CTSV (theme: \"AI Agents for Software Innovation\")—leading Team UNDERATE's Next.js + Playwright multi-agent QA auditor (SEAL Underrate) to 3rd Place (Top 3 Finalist).",
     highlight: "Top 3 / 3rd",
     category: "award",
   },
   {
     id: "tl-seal-sprints",
-    period: "01/2026 – 08/2026",
+    period: "11–12/04 & 15–16/08/2026",
     title: "SEAL Spring & Summer · RAG × IoT",
     context:
-      "Followed Fall with an employee RAG assistant strictly bounded to verified company docs (Spring 2026) and a WebSocket AI agent guarding factory temperature, humidity, and smoke actuators (Summer 2026).",
+      "Spring 2026 (11–12/04/2026, \"Mastering Domain-Specific AI RAG Systems\") built an internal employee AI chatbot strictly constrained to verified company documents via RAG; Summer 2026 (15–16/08/2026, \"AI-Driven Smart Operations: Turning Real-Time IoT Data into Intelligent Actions\") streamed WebSocket temperature, humidity & smoke telemetry into factory equipment safety AI agents to modulate IoT actuators—honored at Summer 2026 for completing all three consecutive SEAL seasons.",
+    highlight: "3-Season Streak",
     category: "engineering",
   },
   {

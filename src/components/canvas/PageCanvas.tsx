@@ -83,6 +83,9 @@ export const MOSAIC_FRAGMENT_SHADER = `
 
     gl_FragColor = vec4(rgb, alpha);
     #include <colorspace_fragment>
+    if (texColor.a < 0.999) {
+      gl_FragColor.rgb *= texColor.a;
+    }
   }
 `;
 
@@ -318,7 +321,6 @@ export function PageCanvas() {
     window.addEventListener("resize", onResize);
     window.addEventListener("scroll", syncScrollTransform, { passive: true });
 
-    let rafId = 0;
     let isRunning = false;
 
     const renderFrame = () => {
@@ -327,8 +329,8 @@ export function PageCanvas() {
         renderer.setClearColor(0x000000, 0);
         renderer.setScissorTest(false);
         renderer.clear();
+        gsap.ticker.remove(renderFrame);
         isRunning = false;
-        rafId = 0;
         return;
       }
 
@@ -384,21 +386,19 @@ export function PageCanvas() {
         renderer.setScissor(scissorLeft, scissorBottom, scissorW, scissorH);
         renderer.render(item.scene, item.camera);
       }
-
-      rafId = requestAnimationFrame(renderFrame);
     };
 
     ensureLoopRef.current = () => {
       if (!isRunning && scenesRef.current.length > 0) {
         isRunning = true;
-        rafId = requestAnimationFrame(renderFrame);
+        gsap.ticker.add(renderFrame);
       }
     };
 
     ensureLoopRef.current();
 
     return () => {
-      cancelAnimationFrame(rafId);
+      gsap.ticker.remove(renderFrame);
       isRunning = false;
       ensureLoopRef.current = () => {};
       window.removeEventListener("resize", onResize);

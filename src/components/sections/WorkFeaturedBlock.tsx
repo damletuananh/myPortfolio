@@ -6,15 +6,12 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import {
   SITE_CONFIG,
   FEATURED_PROJECTS,
-  MID_BIRD_MEDIA,
   type ProjectItem,
 } from "@/data/portfolio";
-import { SignatureDrawSvg } from "@/components/svg/BrandGraphics";
 import { TransitionLink } from "@/components/providers/TransitionProvider";
 import { BigDriftTitle } from "@/components/motion/SplitTitle";
 import { Parallax } from "@/components/motion/Parallax";
 import { WordReveal } from "@/components/motion/WordReveal";
-import { DrawSvg } from "@/components/motion/DrawSvg";
 import { Marquee } from "@/components/motion/Marquee";
 import {
   LineAnim,
@@ -225,20 +222,16 @@ export function WorkFeaturedBlock() {
 
               {project.layoutStyle === 5 ? (
                 <div className="contentContainer smaller hideResp">
-                  <InnerCanvasBox
-                    imageSrc={MID_BIRD_MEDIA.imageSrc}
-                    respImageSrc={MID_BIRD_MEDIA.respImageSrc}
-                    alt={MID_BIRD_MEDIA.alt}
-                    mouseTrigger
-                  />
+                  <BlockAnim variant={2} />
                   <LineAnim />
-                  <div className="drawTextContainer">
-                    <DrawSvg triggerOnScroll delay={0.1}>
-                      <SignatureDrawSvg variant="birdCallout" />
-                    </DrawSvg>
-                  </div>
+                  <span className="mTag">{SITE_CONFIG.midNoteTitle}</span>
                   <div className="text">
-                    <WordReveal text={SITE_CONFIG.birdJokeText} tag="p" />
+                    <WordReveal text={SITE_CONFIG.midNoteBody} tag="p" />
+                  </div>
+                  <div className="midNoteAction">
+                    <TransitionLink href="/about" className="textLink">
+                      Read the full story
+                    </TransitionLink>
                   </div>
                 </div>
               ) : null}
