@@ -12,13 +12,20 @@ import {
   createMosaicUniforms,
 } from "./PageCanvas";
 
+function isElementRendered(el: Element): boolean {
+  return (
+    el instanceof HTMLElement &&
+    el.getClientRects().length > 0 &&
+    window.getComputedStyle(el).display !== "none"
+  );
+}
+
 function detect404Active(): boolean {
   if (typeof document === "undefined") return false;
-  return Boolean(
-    document.querySelector(
-      ".errorBlock, .errorCanvasTriggerHost, .errorCanvasWrapper .innerCanvas"
-    )
+  const hosts = document.querySelectorAll(
+    ".errorBlock, .errorCanvasTriggerHost, .errorCanvasWrapper .innerCanvas"
   );
+  return Array.from(hosts).some(isElementRendered);
 }
 
 export function ErrorCanvas() {
@@ -30,25 +37,37 @@ export function ErrorCanvas() {
 
   useEffect(() => {
     let rafId = 0;
+    const syncNow = () => {
+      const next = detect404Active();
+      setIsActive((prev) => (prev === next ? prev : next));
+    };
     const sync = () => {
       if (rafId) cancelAnimationFrame(rafId);
-      rafId = requestAnimationFrame(() => {
-        const next = detect404Active();
-        setIsActive((prev) => (prev === next ? prev : next));
-      });
+      rafId = requestAnimationFrame(syncNow);
+    };
+    const handleSyncEvent = () => {
+      syncNow();
+      sync();
     };
 
     sync();
-    window.addEventListener("portfolio:page-ready", sync);
+    window.addEventListener("portfolio:page-ready", handleSyncEvent);
+    window.addEventListener("portfolio:curtain-opening", handleSyncEvent);
 
     const observeTarget =
       document.getElementById("pageContainer") ?? document.body;
-    const observer = new MutationObserver(sync);
-    observer.observe(observeTarget, { childList: true, subtree: true });
+    const observer = new MutationObserver(handleSyncEvent);
+    observer.observe(observeTarget, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["style", "hidden", "class"],
+    });
 
     return () => {
       if (rafId) cancelAnimationFrame(rafId);
-      window.removeEventListener("portfolio:page-ready", sync);
+      window.removeEventListener("portfolio:page-ready", handleSyncEvent);
+      window.removeEventListener("portfolio:curtain-opening", handleSyncEvent);
       observer.disconnect();
     };
   }, [pathname]);

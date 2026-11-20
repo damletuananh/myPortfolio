@@ -207,7 +207,6 @@ export const SITE_CONFIG: SiteConfig = {
     "Software Engineering @ FPT University · Architecture, Applied AI & Tactile Craft",
   heroBio: [
     "I’m Dam Le Tuan Anh — a full-stack builder at FPT University Ho Chi Minh City (Class of 2028), learning to trade frantic sprints for calm, enduring architecture.",
-    "From sub-2ms urban traffic maps and sensor-bound AI agents to charity playrooms for kids, I build software that stays honest long after the demo ends.",
   ],
   manifestoTitle: "[Craft & System Thinking]",
   manifestoBody:
@@ -480,14 +479,14 @@ export const PROJECTS: ProjectItem[] = [
         heading: "Hackathon Recognition",
         awards: [
           {
-            title: "3rd Place (Top 3 Finalist) · Agile QA Track (Team UNDERATE)",
-            organization: "Software Engineering Agile League (SEAL) · FPTU HCMC SE Dept & CTSV",
-            year: "01–02/11/2025",
+            title: "3rd Place (Top 3) · Agile QA Track (Team UNDERATE)",
+            organization: "SEAL · FPTU HCMC",
+            year: "11/2025",
           },
           {
-            title: "Three-Season Consecutive Competitor Honor (Fall '25 · Spring '26 · Summer '26)",
-            organization: "Software Engineering Agile League (SEAL) · FPT University HCMC",
-            year: "15–16/08/2026",
+            title: "Three-Season Consecutive Honor (Fall '25 – Summer '26)",
+            organization: "SEAL · SE & CTSV",
+            year: "08/2026",
           },
         ],
       },

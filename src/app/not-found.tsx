@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useLenisContext } from "@/components/providers/LenisProvider";
 import { useThemeBackground } from "@/components/providers/ThemeBackgroundProvider";
@@ -32,6 +32,18 @@ function ErrorRows() {
 export default function NotFoundPage() {
   const { lenis } = useLenisContext();
   const { portalTarget404, refreshBackgrounds } = useThemeBackground();
+  const [isRouteVisible, setIsRouteVisible] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    queueMicrotask(() => {
+      if (active) setIsRouteVisible(true);
+    });
+    return () => {
+      active = false;
+      setIsRouteVisible(false);
+    };
+  }, []);
 
   useEffect(() => {
     const html = document.documentElement;
@@ -117,7 +129,7 @@ export default function NotFoundPage() {
         </div>
       </section>
 
-      {portalTarget404
+      {portalTarget404 && isRouteVisible
         ? createPortal(
             <div className="copyErrorContent" aria-hidden="true">
               <div className="backgroundTitle">

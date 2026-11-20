@@ -799,6 +799,10 @@ export function PageCanvas() {
         document.querySelectorAll<HTMLElement>(
           ".innerCanvas:not(.errorCanvasWrapper .innerCanvas)"
         )
+      ).filter(
+        (el) =>
+          el.getClientRects().length > 0 &&
+          window.getComputedStyle(el).display !== "none"
       );
 
     const isSameElementList = (elements: HTMLElement[]) => {
@@ -859,7 +863,12 @@ export function PageCanvas() {
         })
       : null;
 
-    domObserver?.observe(pageContainer!, { childList: true, subtree: true });
+    domObserver?.observe(pageContainer!, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["style"],
+    });
     window.addEventListener("portfolio:page-ready", onPageReady);
 
     return () => {

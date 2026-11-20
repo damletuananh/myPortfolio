@@ -103,6 +103,10 @@ export function ThemeBackgroundProvider({
       document.querySelector<HTMLDivElement>(".backgroundContainer .backgrounds");
     const targets = Array.from(
       document.querySelectorAll<HTMLElement>(".setPrimaryBackground")
+    ).filter(
+      (el) =>
+        el.getClientRects().length > 0 &&
+        window.getComputedStyle(el).display !== "none"
     );
 
     if (targets.length === 0) {

@@ -6002,40 +6002,54 @@ form .submitField {
   margin: 5vw 0 !important;
 }
 
+.projectAwardsBlock .cols {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 3vw;
+}
+
 .projectAwardsBlock .cols .col {
   display: inline-block;
   vertical-align: top;
 }
 
 .projectAwardsBlock .cols .col:first-child {
-  width: 56vw;
+  width: auto;
+  flex: 1 1 auto;
 }
 
 .projectAwardsBlock .cols .col:last-child {
-  width: 23vw;
+  width: 32vw;
+  flex: 0 0 32vw;
 }
 
 .projectAwardsBlock .award {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 1vw;
+  gap: 1.5vw;
+  margin-bottom: 1.6vw;
 }
 
 .projectAwardsBlock .awardTitle {
-  width: 15vw;
+  width: auto;
+  flex: 1 1 auto;
+  line-height: 1.3;
 }
 
 .projectAwardsBlock .awardCompanyWrap {
-  width: 8vw;
+  width: 12.5vw;
+  flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.375vw;
+  gap: 0.45vw;
 }
 
 .projectAwardsBlock .awardCompany {
-  font-size: 0.75vw;
+  font-size: 0.72vw;
+  line-height: 1.25;
   font-weight: 700;
   text-align: center;
   text-transform: uppercase;
@@ -6071,11 +6085,11 @@ form .submitField {
     margin: 7.407vw 0 !important;
   }
 
-  .projectAwardsBlock .cols .col:first-child { width: 60%; }
-  .projectAwardsBlock .cols .col:last-child { width: 40%; }
+  .projectAwardsBlock .cols .col:first-child { width: auto; flex: 1 1 auto; }
+  .projectAwardsBlock .cols .col:last-child { width: 46%; flex: 0 0 46%; }
 
-  .projectAwardsBlock .awardTitle { width: 60%; }
-  .projectAwardsBlock .awardCompanyWrap { width: 40%; }
+  .projectAwardsBlock .awardTitle { width: auto; flex: 1 1 auto; }
+  .projectAwardsBlock .awardCompanyWrap { width: 18vw; flex-shrink: 0; }
   .projectAwardsBlock .awardCompany { font-size: 1.111vw; }
   .projectAwardsBlock .leftIcon,
   .projectAwardsBlock .rightIcon { width: 0.741vw; height: 0; }
@@ -6090,12 +6104,23 @@ form .submitField {
     margin: 13.793vw 0 !important;
   }
 
+  .projectAwardsBlock .cols {
+    display: block;
+  }
+
   .projectAwardsBlock .cols .col:first-child,
   .projectAwardsBlock .cols .col:last-child {
     width: 100%;
     margin-bottom: 5.172vw;
   }
 
+  .projectAwardsBlock .award {
+    gap: 4vw;
+    margin-bottom: 4vw;
+  }
+
+  .projectAwardsBlock .awardTitle { width: auto; flex: 1 1 auto; }
+  .projectAwardsBlock .awardCompanyWrap { width: 34vw; flex-shrink: 0; }
   .projectAwardsBlock .awardCompany { font-size: 2.069vw; }
   .projectAwardsBlock .leftIcon,
   .projectAwardsBlock .rightIcon { width: 1.379vw; height: 0; }
